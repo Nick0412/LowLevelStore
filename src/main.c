@@ -4,6 +4,6 @@
 int main()
 {
     printf("Hello World from main\n");
-    printf("MY num %d", add());
+    printf("MY num %d\n", add());
     return 0;
 }
