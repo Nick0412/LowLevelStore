@@ -57,7 +57,7 @@ $$(OBJ_TEST_DIR)/$(1).o: $(2) | $$(OBJ_TEST_DIR)
 	$$(CC) $$(CPPFLAGS) $$(CFLAGS) -c $$< -o $$@
 
 $$(BIN_TEST_DIR)/$(1): $$(OBJ_TEST_DIR)/$(1).o $$(OBJECTS_WITHOUT_MAIN) | $$(BIN_TEST_DIR)
-	$$(CC)$$(LDFLAGS) $$^ $$(LDLIBS) -o $$@
+	$$(CC) $$(LDFLAGS) $$^ $$(LDLIBS) -o $$@
 	
 endef
 

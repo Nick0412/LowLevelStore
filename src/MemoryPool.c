@@ -49,6 +49,7 @@ void destroyMemoryPool(MemoryPoolList* list)
         }
         list->head = NULL;
         list->tail = NULL;
+        list->number_of_nodes = 0;
     }
 }
 
@@ -60,6 +61,7 @@ void printMemoryPoolSizes(MemoryPoolList* list)
     }
     else
     {
+        printf("Number of memory pool nodes: %d\n", list->number_of_nodes);
         MemoryPoolListNode* curr = list->head;
         while (curr != NULL)
         {
