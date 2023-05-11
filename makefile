@@ -4,6 +4,8 @@ rwildcard = $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subs
 SRC_DIR 		:= src
 BIN_DIR 		:= bin
 OBJECT_DIR 		:= obj
+# Outputs, both libraries and executables
+EXE := $(BIN_DIR)/store
 # Contains a list of all source files (*.c) with their nested directory structure. (example: src/dir1/file.c)
 SOURCES 	:= $(call rwildcard,$(SRC_DIR),*.c)
 # Contains the list of object files (*.o) and strips off directory prefix. (example: obj/file.o)
@@ -11,9 +13,6 @@ OBJECTS 	:= $(patsubst %.c,$(OBJECT_DIR)/%.o,$(notdir $(SOURCES)))
 # Update VPATH to include all nested directories in src folder.
 # Reference: https://www.gnu.org/software/make/manual/html_node/General-Search.html
 VPATH 		:= $(sort $(dir $(SOURCES)))
-
-# Outputs, both libraries and executables
-EXE := $(BIN_DIR)/store
 
 # C Pre Processor flags
 CPPFLAGS 	:= -Iinclude
@@ -42,13 +41,13 @@ clean:
 # ======================================================================== #
 
 TEST_DIR			:= test
-BIN_TEST_DIR 		:= bin/test
+BIN_TEST_DIR		:= bin/test
 OBJ_TEST_DIR		:= obj/test
 
-TEST_SOURCES 		:= $(strip $(call rwildcard,$(TEST_DIR),*.c))
+TEST_SOURCES		:= $(strip $(call rwildcard,$(TEST_DIR),*.c))
 PURE_TEST_SOURCES	:= $(basename $(notdir $(TEST_SOURCES)))
-TEST_OBJECTS 		:= $(patsubst %.c,$(OBJECT_DIR)/%.o,$(notdir $(TEST_SOURCES)))
-TEST_EXES	 		:= $(patsubst %.c,$(BIN_TEST_DIR)/%,$(notdir $(TEST_SOURCES)))
+TEST_OBJECTS		:= $(patsubst %.c,$(OBJECT_DIR)/%.o,$(notdir $(TEST_SOURCES)))
+TEST_EXES			:= $(patsubst %.c,$(BIN_TEST_DIR)/%,$(notdir $(TEST_SOURCES)))
 
 OBJECTS_WITHOUT_MAIN := $(filter-out obj/main.o,$(OBJECTS))
 
@@ -68,7 +67,9 @@ $(BIN_TEST_DIR) $(OBJ_TEST_DIR):
 
 test: $(TEST_EXES) all
 	$(info ************  RUNNING TESTS ************)
-	$(foreach executable,$(TEST_EXES),./$(executable))
+	@for test in $(TEST_EXES); do \
+		./$$test; \
+	done
 
 # Helper target to print out variable definitions.
 new:
