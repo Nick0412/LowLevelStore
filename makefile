@@ -1,4 +1,4 @@
-# Helper function to perform recursive search in a directory for file types.
+ # Helper function to perform recursive search in a directory for file types.
 rwildcard = $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 
 SRC_DIR 		:= src

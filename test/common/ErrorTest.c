@@ -6,12 +6,10 @@
 void testInitializeError()
 {
     Error error;
+    StringBuffer buff;
     int32_t error_code = 34;
-    StringBuffer buff = {
-        .string_pointer = "test error",
-        .string_size = 10
-    };
 
+    initializeStringBuffer(&buff, "test error", 10);
     initializeError(&error, error_code, &buff);
 
     // Compares if 2 strings are the same (expecting 0).
