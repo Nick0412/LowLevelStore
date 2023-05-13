@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 void helperTestPoolIsCleanedUp(MemoryPoolList* pool)
 {
@@ -39,6 +40,23 @@ void testSingleNodePool()
     helperTestPoolIsCleanedUp(&pool);
 }
 
+void testAllocateMemoryInPool()
+{
+    MemoryPoolList pool;
+    AugmentedBuffer buffer;
+    char* test_string = "1234567890";
+
+    initializeMemoryPool(&pool);
+    allocateMemoryInPool(&pool, 10, &buffer);
+
+    memcpy(buffer.buffer_pointer, test_string, 10);
+    
+    assert(buffer.buffer_size == 10);
+    assert(strncmp(buffer.buffer_pointer, test_string, 10) == 0);
+
+    destroyMemoryPool(&pool);
+}
+
 int main()
 {
     printf("STARTING MEMORY POOL TEST\n");
@@ -46,4 +64,6 @@ int main()
     testZeroNodePool();
 
     testSingleNodePool();
+
+    testAllocateMemoryInPool();
 }
