@@ -16,7 +16,7 @@ VPATH 		:= $(sort $(dir $(SOURCES)))
 
 # C Pre Processor flags
 CPPFLAGS 	:= -Iinclude
-CFLAGS   	:= -Wall
+CFLAGS   	:= -Wall -std=c17
 LDFLAGS  	:=
 LDLIBS   	:=
 
