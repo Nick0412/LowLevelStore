@@ -1,7 +1,7 @@
 #ifndef BUFFER_HELPER_H
 #define BUFFER_HELPER_H
 
-#include <cstdint>
+#include <stdint.h>
 
 typedef struct AugmentedBuffer
 {
