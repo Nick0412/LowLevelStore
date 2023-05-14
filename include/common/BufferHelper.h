@@ -2,7 +2,6 @@
 #define BUFFER_HELPER_H
 
 #include <stdint.h>
-#include "StringBuffer.h"
 
 typedef struct AugmentedBuffer
 {
@@ -18,7 +17,7 @@ typedef struct AugmentedBuffer
  * @param buffer The buffer to copy the string to.
  * @param offset The offset in the buffer to place the string.
  */
-void placeStringInBuffer(StringBuffer* string, AugmentedBuffer* buffer, uint32_t offset);
+void placeStringInBuffer(AugmentedBuffer* string, AugmentedBuffer* buffer, uint32_t offset);
 
 /**
  * @brief Places a 32 bit unsigned integer into buffer at a given offset in the buffer. This
@@ -51,6 +50,6 @@ void get32BitUintFromBuffer(AugmentedBuffer* buffer, uint32_t offset, uint32_t* 
  * @param return_string The returned string. This should have memory allocated to hold the
  * returning string and the size of the string.
  */
-void getStringFromBuffer(AugmentedBuffer* buffer, uint32_t offset, StringBuffer* return_string);
+void getStringFromBuffer(AugmentedBuffer* buffer, uint32_t offset, AugmentedBuffer* return_string);
 
 #endif

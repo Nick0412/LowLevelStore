@@ -3,14 +3,13 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 
-void placeStringInBuffer(StringBuffer* string, AugmentedBuffer* buffer, uint32_t offset)
+void placeStringInBuffer(AugmentedBuffer* string, AugmentedBuffer* buffer, uint32_t offset)
 {
     // Casting to char* allows for easier pointer arithmetic using 1 byte values.
     char* casted_buffer = (char*)buffer->buffer_pointer;
 
     // TODO: Figure out what error to return if the string goes outside of the buffer size.
-
-    memcpy(casted_buffer + offset, string->string_pointer, string->string_size);
+    memcpy(casted_buffer + offset, string->buffer_pointer, string->buffer_size);
 }
 
 void place32BitUintInBuffer(uint32_t value, AugmentedBuffer* buffer, uint32_t offset)
@@ -37,9 +36,9 @@ void get32BitUintFromBuffer(AugmentedBuffer* buffer, uint32_t offset, uint32_t* 
     *return_value = ntohl(*return_value);
 }
 
-void getStringFromBuffer(AugmentedBuffer* buffer, uint32_t offset, StringBuffer* return_string)
+void getStringFromBuffer(AugmentedBuffer* buffer, uint32_t offset, AugmentedBuffer* return_string)
 {
     char* casted_buffer = (char*)buffer->buffer_pointer;
 
-    memcpy(return_string->string_pointer, buffer->buffer_pointer + offset, return_string->string_size);
+    memcpy(return_string->buffer_pointer, buffer->buffer_pointer + offset, return_string->buffer_size);
 }

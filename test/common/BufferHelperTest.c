@@ -11,26 +11,26 @@ void testPlaceStringAndGetStringFromBuffer()
         .buffer_size = 10
     };
 
-    StringBuffer input_string = {
-        .string_pointer = "test1",
-        .string_size = 5
+    AugmentedBuffer input_string = {
+        .buffer_pointer = "test1",
+        .buffer_size = 5
     };
 
     uint32_t offset = 3;
 
     // We want to grab the string "test".
-    StringBuffer return_string = {
-        .string_pointer = malloc(4),
-        .string_size = 4
+    AugmentedBuffer return_string = {
+        .buffer_pointer = malloc(4),
+        .buffer_size = 4
     };
 
     placeStringInBuffer(&input_string, &buffer, offset);
     getStringFromBuffer(&buffer, offset, &return_string);
 
-    assert(strncmp(return_string.string_pointer, "test", return_string.string_size) == 0);
+    assert(strncmp(return_string.buffer_pointer, "test", return_string.buffer_size) == 0);
 
     free(buffer.buffer_pointer);
-    free(return_string.string_pointer);
+    free(return_string.buffer_pointer);
 }
 
 void testPlace32BitUintAndGetFromBuffer()
