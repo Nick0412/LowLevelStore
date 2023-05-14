@@ -31,7 +31,7 @@ void get32BitUintFromBuffer(AugmentedBuffer* buffer, uint32_t offset, uint32_t* 
     *return_value = (casted_buffer[offset + 3] & 0xFF) << 24 | 
                     (casted_buffer[offset + 2] & 0xFF) << 16 | 
                     (casted_buffer[offset + 1] & 0xFF) << 8 |
-                    casted_buffer[offset] & 0xFF;
+                    (casted_buffer[offset] & 0xFF);
 
     *return_value = ntohl(*return_value);
 }
@@ -40,5 +40,11 @@ void getStringFromBuffer(AugmentedBuffer* buffer, uint32_t offset, AugmentedBuff
 {
     char* casted_buffer = (char*)buffer->buffer_pointer;
 
-    memcpy(return_string->buffer_pointer, buffer->buffer_pointer + offset, return_string->buffer_size);
+    memcpy(return_string->buffer_pointer, casted_buffer + offset, return_string->buffer_size);
+}
+
+bool areAugmentedBuffersSame(AugmentedBuffer* first, AugmentedBuffer* second)
+{
+    return (first->buffer_size == second->buffer_size) &&
+           (memcmp(first->buffer_pointer, second->buffer_pointer, first->buffer_size) == 0);
 }

@@ -52,6 +52,36 @@ void testPlace32BitUintAndGetFromBuffer()
     free(buffer.buffer_pointer);
 }
 
+void testAreAugmentedBuffersTheSameSuccess()
+{
+    AugmentedBuffer buff1 = {
+        .buffer_pointer = "blabla",
+        .buffer_size = 5
+    };
+
+    AugmentedBuffer buff2 = {
+        .buffer_pointer = "blabla",
+        .buffer_size = 5
+    };
+
+    assert(areAugmentedBuffersSame(&buff1, &buff2));
+}
+
+void testAreAugmentedBuffersTheSameFailure()
+{
+    AugmentedBuffer buff1 = {
+        .buffer_pointer = "blabla",
+        .buffer_size = 5
+    };
+
+    AugmentedBuffer buff2 = {
+        .buffer_pointer = "bla",
+        .buffer_size = 5
+    };
+
+    assert(!areAugmentedBuffersSame(&buff1, &buff2));
+}
+
 int main()
 {
     printf("STARTING BUFFER HELPER TEST\n");
@@ -59,4 +89,8 @@ int main()
     testPlaceStringAndGetStringFromBuffer();
 
     testPlace32BitUintAndGetFromBuffer();
+
+    testAreAugmentedBuffersTheSameSuccess();
+
+    testAreAugmentedBuffersTheSameFailure();
 }

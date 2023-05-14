@@ -2,6 +2,7 @@
 #define BUFFER_HELPER_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef struct AugmentedBuffer
 {
@@ -51,5 +52,11 @@ void get32BitUintFromBuffer(AugmentedBuffer* buffer, uint32_t offset, uint32_t* 
  * returning string and the size of the string.
  */
 void getStringFromBuffer(AugmentedBuffer* buffer, uint32_t offset, AugmentedBuffer* return_string);
+
+/**
+ * @brief Compares 2 augmented buffers and checks if the sizes and memory are the same.
+ * 
+ */
+bool areAugmentedBuffersSame(AugmentedBuffer* first, AugmentedBuffer* second);
 
 #endif
