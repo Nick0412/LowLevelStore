@@ -41,9 +41,7 @@ void testSerializeDeserializePutKeyValueMessageRequest()
     calculatePutKeyValueMessageRequestSize(&message, &message_size);
     AugmentedBuffer buff;
     allocateMemoryInPool(&pool, message_size, &buff); // buff.buffer_pointer will hold message
-
     serializePutKeyValueMessageRequest(&message, &buff);
-
     PutKeyValueMessageRequest result_message;
     deserializePutKeyValueMessageRequest(&pool, &buff, &result_message);
 

@@ -2,12 +2,11 @@
 
 void calculatePutKeyValueMessageRequestSize(PutKeyValueMessageRequest* message, uint32_t* return_size)
 {
-    uint32_t temp_size = 0;
     // TODO: Extract these into constants
     // Size of message -> store in 4 bytes
     // Type of message -> store in 4 bytes
     // Size of strings/variable types -> store in 4 bytes
-    temp_size = 4 + 4 + 4 + message->key->buffer_size + 4 + message->value->buffer_size;
+    uint32_t temp_size = 4 + 4 + 4 + message->key->buffer_size + 4 + message->value->buffer_size;
 
     *return_size = temp_size;
 }
