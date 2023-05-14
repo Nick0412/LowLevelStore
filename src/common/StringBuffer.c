@@ -4,6 +4,7 @@
 void printString(StringBuffer* buffer)
 {
     fwrite(buffer->string_pointer, sizeof(char), buffer->string_size, stdout);
+    fwrite("\n", sizeof(char), 1, stdout);
 }
 
 void initializeStringBuffer(StringBuffer* buffer, char* string_pointer, uint32_t string_size)
