@@ -57,6 +57,6 @@ void getStringFromBuffer(AugmentedBuffer* buffer, uint32_t offset, AugmentedBuff
  * @brief Compares 2 augmented buffers and checks if the sizes and memory are the same.
  * 
  */
-bool areAugmentedBuffersSame(AugmentedBuffer* first, AugmentedBuffer* second);
+bool areAugmentedBuffersSame(const AugmentedBuffer* first, const AugmentedBuffer* second);
 
 #endif

@@ -43,7 +43,7 @@ void getStringFromBuffer(AugmentedBuffer* buffer, uint32_t offset, AugmentedBuff
     memcpy(return_string->buffer_pointer, casted_buffer + offset, return_string->buffer_size);
 }
 
-bool areAugmentedBuffersSame(AugmentedBuffer* first, AugmentedBuffer* second)
+bool areAugmentedBuffersSame(const AugmentedBuffer* first, const AugmentedBuffer* second)
 {
     return (first->buffer_size == second->buffer_size) &&
            (memcmp(first->buffer_pointer, second->buffer_pointer, first->buffer_size) == 0);
