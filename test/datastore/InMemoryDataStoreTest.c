@@ -79,6 +79,51 @@ void testKeyValueLookup()
     destroyMemoryPool(&pool);
 }
 
+void insertDuplicateKeyInDataStore()
+{
+    InMemoryDataStore store;
+    MemoryPoolList pool;
+    initializeInMemoryDataStore(&store);
+    initializeMemoryPool(&pool);
+
+    KeyValueEntity kv = {
+        .key = &(AugmentedBuffer) {
+            .buffer_pointer = "test_key",
+            .buffer_size = 8
+        },
+        .value = &(AugmentedBuffer) {
+            .buffer_pointer = "test_value",
+            .buffer_size = 10
+        }
+    };
+    KeyValueEntity kv_2 = {
+        .key = &(AugmentedBuffer) {
+            .buffer_pointer = "test_key",
+            .buffer_size = 8
+        },
+        .value = &(AugmentedBuffer) {
+            .buffer_pointer = "blabla",
+            .buffer_size = 6
+        }
+    };
+
+    insertKeyValuePair(&pool, &store, &kv);
+    insertKeyValuePair(&pool, &store, &kv_2);
+
+    AugmentedBuffer lookup_key = {
+        .buffer_pointer = "test_key",
+        .buffer_size = 8
+    };
+    AugmentedBuffer return_value;
+
+    findValue(&pool, &store, &lookup_key, &return_value);
+
+    assert(store.current_size == 1);
+    assert(memcmp(return_value.buffer_pointer, "test_value", return_value.buffer_size) == 0);
+
+    destroyMemoryPool(&pool);
+}
+
 int main()
 {
     printf("STARTING IN MEMORY DATA STORE TEST\n");
@@ -88,4 +133,6 @@ int main()
     testKeyValueInsertion();
 
     testKeyValueLookup();
+
+    insertDuplicateKeyInDataStore();
 }

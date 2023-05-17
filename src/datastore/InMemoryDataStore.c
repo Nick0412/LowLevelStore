@@ -11,6 +11,14 @@ void initializeInMemoryDataStore(InMemoryDataStore* store)
 // TODO: Currently doesn't handle duplicate keys. Add check for this.
 void insertKeyValuePair(MemoryPoolList* pool, InMemoryDataStore* store, KeyValueEntity* kv_entity)
 {
+    // Test if value is already in data store
+    AugmentedBuffer test_value;
+    findValue(pool, store, kv_entity->key, &test_value);
+    if (test_value.buffer_size != -1)
+    {
+        return;
+    }
+
     // Allocate both void pointers for the key and value
     AugmentedBuffer buffer_holding_key;
     AugmentedBuffer buffer_holding_value;
@@ -60,6 +68,7 @@ void findValue(MemoryPoolList* pool, const InMemoryDataStore* store, const Augme
         }
     }
 
+    // TODO: Make these less sentinel value feeling.
     return_value->buffer_pointer = NULL;
     return_value->buffer_size = -1;
 }
