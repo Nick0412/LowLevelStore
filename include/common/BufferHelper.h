@@ -46,6 +46,15 @@ void get32BitUintFromBuffer(AugmentedBuffer* buffer, uint32_t offset, uint32_t* 
  * @brief Get a string at an offset from the buffer. This assumes that the string has had memory
  * allocated to hold the string and its size before the function call.
  * 
+ * `return_string` must be properly allocated for.
+ * 
+ * - AugmentedBuffer (return_string)
+ *   - void* (buffer_pointer) [must be allocated]
+ *   - int (buffer_size) [must be allocated, implicitly allocated when AugmentedBuffer is made]
+ * 
+ * The `buffer_size` of `return_string` must be set to the correct size. The only way we know the
+ * size of the string to copy over is due to `return_string->buffer_size`.
+ * 
  * @param buffer The buffer to read from.
  * @param offset The offset location of where to read the string from.
  * @param return_string The returned string. This should have memory allocated to hold the
