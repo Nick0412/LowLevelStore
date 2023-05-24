@@ -19,6 +19,19 @@ void calculateGetValueMessageRequestSize(GetValueMessageRequest* message, uint32
 
 void serializeGetValueMessageRequest(GetValueMessageRequest* message, AugmentedBuffer* return_buffer);
 
-void deserializeGetValueMessageRequest(MemoryPoolList* pool, AugmentedBuffer* buffer, GetValueMessageRequest* return_message);
+/**
+ * @brief 
+ * 
+ * `return_message` needs to be properly allocated for this includes all of its dependent fields
+ * 
+ * - GetValueMessageRequest (return_message)
+ *   - AugmentedBuffer* (key) [needs to be allocated]
+ *     - void* (buffer_pointer) [needs to be allocated]
+ *     - int (buffer_size) [needs to be allocated]
+ * 
+ * @param buffer 
+ * @param return_message 
+ */
+void deserializeGetValueMessageRequest(AugmentedBuffer* buffer, GetValueMessageRequest* return_message);
 
 #endif

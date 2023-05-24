@@ -28,21 +28,12 @@ void serializeGetValueMessageRequest(GetValueMessageRequest* message, AugmentedB
     placeStringInBuffer(message->key, return_buffer, offset);
 }
 
-void deserializeGetValueMessageRequest(MemoryPoolList* pool, AugmentedBuffer* buffer, GetValueMessageRequest* return_message)
-{
-    // Read key string and size
+void deserializeGetValueMessageRequest(AugmentedBuffer* buffer, GetValueMessageRequest* return_message)
+{   
     uint32_t key_size_offset = 8;
+    uint32_t key_offset = key_size_offset + 4;
     uint32_t key_size;
     get32BitUintFromBuffer(buffer, key_size_offset, &key_size);
-    AugmentedBuffer key_buff;
-    allocateMemoryInPool(pool, key_size, &key_buff); // Allocated string size for key
-    uint32_t key_offset = key_size_offset + 4;
-    getStringFromBuffer(buffer, key_offset, &key_buff);
-
-    // Allocate augmented buffer to attach to return message 
-    AugmentedBuffer key_attach_buff;
-    allocateMemoryInPool(pool, sizeof(AugmentedBuffer), &key_attach_buff); // Allocate the key augmented buffer for the return
-    return_message->key = (AugmentedBuffer*)key_attach_buff.buffer_pointer;
-    return_message->key->buffer_pointer = key_buff.buffer_pointer;
-    return_message->key->buffer_size = key_buff.buffer_size;
+    return_message->key->buffer_size = key_size;
+    getStringFromBuffer(buffer, key_offset, return_message->key);
 }
