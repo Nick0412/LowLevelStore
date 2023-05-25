@@ -27,21 +27,15 @@ void serializeGetValueMessageResponse(GetValueMessageResponse* message, Augmente
     placeStringInBuffer(message->value, return_buffer, offset);
 }
 
-void deserializeGetValueMessageResponse(MemoryPoolList* pool, AugmentedBuffer* buffer, GetValueMessageResponse* return_message)
+void deserializeGetValueMessageResponse(AugmentedBuffer* buffer, GetValueMessageResponse* return_message)
 {
-    // Allocate for value string and size
     uint32_t value_size_offset = 8;
+    uint32_t value_offset = value_size_offset + 4;
     uint32_t value_size;
     get32BitUintFromBuffer(buffer, value_size_offset, &value_size);
-    AugmentedBuffer value_buffer;
-    allocateMemoryInPool(pool, value_size, &value_buffer);
-    uint32_t value_offset = value_size_offset + 4;
-    getStringFromBuffer(buffer, value_offset, &value_buffer);
-
-    // Allocate for Augmented buffer that will be attached to return_message
-    AugmentedBuffer value_attach_buff;
-    allocateMemoryInPool(pool, sizeof(AugmentedBuffer), &value_attach_buff);
-    return_message->value = (AugmentedBuffer*)value_attach_buff.buffer_pointer;
-    return_message->value->buffer_pointer = value_buffer.buffer_pointer;
-    return_message->value->buffer_size = value_buffer.buffer_size;
+    // Important that buffer_size here is set before the function call as the function `getStringFromBuffer`
+    // relies on it to determine the string size. Consider removing this line as return_message->value->buffer_size
+    // should have been set before `deserializeGetValueMessageResponse` is even called.
+    return_message->value->buffer_size = value_size;
+    getStringFromBuffer(buffer, value_offset, return_message->value);
 }
