@@ -38,14 +38,19 @@ void calculatePutKeyValueMessageRequestSize(PutKeyValueMessageRequest* message, 
 void serializePutKeyValueMessageRequest(PutKeyValueMessageRequest* message, AugmentedBuffer* return_buffer);
 
 /**
- * @brief Deserializes the message and puts the result into return_message. 
- * This function allocates memory for the fields in return_message!! This is because we do not know the key
- * and value sizes until we read the buffer.
+ * @brief Deserializes the message and puts the result into `return_message`. 
  * 
- * @param pool The memory pool which will manage memory allocations in this function.
+ * - PutKeyValueMessageRequest (return_message)
+ *   - AugmentedBuffer* (key) [needs to be allocated]
+ *     - void* (buffer_pointer) [needs to be allocated]
+ *     - int (buffer_size) [needs to be allocated, should be set before hand]
+ *   - AugmentedBuffer* (value) [needs to be allocated]
+ *     - void* (buffer_pointer) [needs to be allocated]
+ *     - int (buffer_size) [needs to be allocated, should be set before hand]
+ * 
  * @param buffer 
  * @param return_message 
  */
-void deserializePutKeyValueMessageRequest(MemoryPoolList* pool, AugmentedBuffer* buffer, PutKeyValueMessageRequest* return_message);
+void deserializePutKeyValueMessageRequest(AugmentedBuffer* buffer, PutKeyValueMessageRequest* return_message);
 
 #endif

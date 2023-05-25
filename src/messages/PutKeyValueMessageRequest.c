@@ -38,40 +38,24 @@ void serializePutKeyValueMessageRequest(PutKeyValueMessageRequest* message, Augm
     placeStringInBuffer(message->value, buffer, offset);
 }
 
-// TODO: This function seems like it could be cleaned up but I am unsure how. To avoid memory allocations in here,
-// "return_message" already needs to be allocated along with all of its dependent members. But its dependent members
-// rely on the arguments in the buffer.
-void deserializePutKeyValueMessageRequest(MemoryPoolList* pool, AugmentedBuffer* buffer, PutKeyValueMessageRequest* return_message)
+void deserializePutKeyValueMessageRequest(AugmentedBuffer* buffer, PutKeyValueMessageRequest* return_message)
 {
-    // Read key string and size
+    // Get key from buffer
     uint32_t key_size_offset = 8;
-    uint32_t key_size;
-    get32BitUintFromBuffer(buffer, key_size_offset, &key_size); // Store key size
-    AugmentedBuffer key_buff;
-    allocateMemoryInPool(pool, key_size, &key_buff); // Allocation: a buffer that holds key string
     uint32_t key_offset = key_size_offset + 4;
-    getStringFromBuffer(buffer, key_offset, &key_buff);
+    uint32_t key_size;
+    get32BitUintFromBuffer(buffer, key_size_offset, &key_size);
+    // TODO: Determine if the following line needs to be here as we are expecting the `return_message`
+    // key->buffer_size to be set before `deserializePutKeyValueMessageRequest` is called.
+    return_message->key->buffer_size = key_size;
+    getStringFromBuffer(buffer, key_offset, return_message->key);
 
-    // Read value string and size
-    uint32_t value_size_offset = key_offset + key_buff.buffer_size;
+    // Get value from buffer
+    uint32_t value_size_offset = key_offset + key_size;
+    uint32_t value_offset = value_size_offset + 4;
     uint32_t value_size;
     get32BitUintFromBuffer(buffer, value_size_offset, &value_size);
-    AugmentedBuffer value_buff;
-    allocateMemoryInPool(pool, value_size, &value_buff); // Allocation: a buffer that holds value string
-    uint32_t value_offset = value_size_offset + 4;
-    getStringFromBuffer(buffer, value_offset, &value_buff);
-
-    // Allocate key augmented buffer to attach to `return_message`
-    AugmentedBuffer key_attach_buff;
-    allocateMemoryInPool(pool, sizeof(AugmentedBuffer), &key_attach_buff); // Allocation: AugmentedBuffer struct
-    return_message->key = (AugmentedBuffer*)key_attach_buff.buffer_pointer;
-    return_message->key->buffer_pointer = key_buff.buffer_pointer;
-    return_message->key->buffer_size = key_buff.buffer_size;
-
-    // Allocate value augmented buffer to attach to `return_message`
-    AugmentedBuffer value_attach_buff;
-    allocateMemoryInPool(pool, sizeof(AugmentedBuffer), &value_attach_buff); // Allocation: AugmentedBuffer struct
-    return_message->value = (AugmentedBuffer*)value_attach_buff.buffer_pointer; 
-    return_message->value->buffer_pointer = value_buff.buffer_pointer;
-    return_message->value->buffer_size = value_buff.buffer_size;
+    // TODO: Same as the above TODO.
+    return_message->value->buffer_size = value_size;
+    getStringFromBuffer(buffer, value_offset, return_message->value);
 }

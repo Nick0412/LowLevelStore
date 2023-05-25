@@ -1,6 +1,7 @@
 #include "messages/PutKeyValueMessageRequest.h"
 #include <stdio.h>
 #include <assert.h>
+#include <stdlib.h>
 
 void testCalculatePutKeyMessageRequestSize()
 {
@@ -23,9 +24,6 @@ void testCalculatePutKeyMessageRequestSize()
 
 void testSerializeDeserializePutKeyValueMessageRequest()
 {
-    MemoryPoolList pool;
-    initializeMemoryPool(&pool);
-
     PutKeyValueMessageRequest message = {
         .key = &(AugmentedBuffer) {
             .buffer_pointer = "test_key",
@@ -37,18 +35,35 @@ void testSerializeDeserializePutKeyValueMessageRequest()
         }
     };
 
+    // Serialize
     uint32_t message_size;
     calculatePutKeyValueMessageRequestSize(&message, &message_size);
-    AugmentedBuffer buff;
-    allocateMemoryInPool(&pool, message_size, &buff); // buff.buffer_pointer will hold message
-    serializePutKeyValueMessageRequest(&message, &buff);
-    PutKeyValueMessageRequest result_message;
-    deserializePutKeyValueMessageRequest(&pool, &buff, &result_message);
+    AugmentedBuffer serialized_buffer = {
+        .buffer_pointer = malloc(message_size),
+        .buffer_size = message_size
+    };
+    serializePutKeyValueMessageRequest(&message, &serialized_buffer);
 
+    // Deserialize
+    PutKeyValueMessageRequest result_message;
+    result_message.key = malloc(sizeof(AugmentedBuffer));
+    result_message.key->buffer_pointer = malloc(8);
+    result_message.key->buffer_size = 8;
+    result_message.value = malloc(sizeof(AugmentedBuffer));
+    result_message.value->buffer_pointer = malloc(10);
+    result_message.value->buffer_size = 10;
+    deserializePutKeyValueMessageRequest(&serialized_buffer, &result_message);
+
+    // Test
     assert(areAugmentedBuffersSame(result_message.key, message.key));
     assert(areAugmentedBuffersSame(result_message.value, message.value));
 
-    destroyMemoryPool(&pool);
+    // Cleanup
+    free(serialized_buffer.buffer_pointer);
+    free(result_message.key->buffer_pointer);
+    free(result_message.key);
+    free(result_message.value->buffer_pointer);
+    free(result_message.value);
 }
 
 int main()
