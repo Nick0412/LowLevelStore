@@ -1,10 +1,10 @@
 #ifndef IN_MEMORY_DATA_STORE_H
 #define IN_MEMORY_DATA_STORE_H
 
-#define MAX_NUMBER_OF_KVS 100
-
 #include "KeyValueEntity.h"
 #include "common/MemoryPool.h"
+
+#define MAX_NUMBER_OF_KVS 100
 
 /**
  * @brief Naive construct of an in memory data store comprise of an append only
@@ -15,10 +15,13 @@ typedef struct InMemoryDataStore
 {
     uint32_t current_size;
     KeyValueEntity data[MAX_NUMBER_OF_KVS];
+    MemoryPoolList* pool;
 
 } InMemoryDataStore;
 
 void initializeInMemoryDataStore(InMemoryDataStore* store);
+
+void destroyInMemoryDataStore(InMemoryDataStore* store);
 
 /**
  * @brief 
@@ -38,8 +41,17 @@ void initializeInMemoryDataStore(InMemoryDataStore* store);
  * @param store 
  * @param kv_entity 
  */
-void insertKeyValuePair(MemoryPoolList* pool, InMemoryDataStore* store, KeyValueEntity* kv_entity);
+void insertKeyValuePair(InMemoryDataStore* store, KeyValueEntity* kv_entity);
 
-void findValue(MemoryPoolList* pool, const InMemoryDataStore* store, const AugmentedBuffer* key, AugmentedBuffer* return_value);
+/**
+ * @brief 
+ * 
+ * `return_value` is a pointer to the memory inside the data store, as opposed to a copy of that data.
+ * 
+ * @param store 
+ * @param key 
+ * @param return_value 
+ */
+void findValue(InMemoryDataStore* store, const AugmentedBuffer* key, AugmentedBuffer** return_value);
 
 #endif
