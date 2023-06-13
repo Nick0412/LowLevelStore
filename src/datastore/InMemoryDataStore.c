@@ -35,7 +35,7 @@ void insertKeyValuePair(InMemoryDataStore* store, KeyValueEntity* kv_entity)
     first_ab->buffer_pointer = (char*)new_kv_buffer.buffer_pointer + (2 * sizeof(AugmentedBuffer));
     first_ab->buffer_size = kv_entity->key->buffer_size;
 
-    AugmentedBuffer* second_ab = (char*)new_kv_buffer.buffer_pointer + sizeof(AugmentedBuffer);
+    AugmentedBuffer* second_ab = (AugmentedBuffer*)((char*)new_kv_buffer.buffer_pointer + sizeof(AugmentedBuffer));
     second_ab->buffer_pointer = (char*)new_kv_buffer.buffer_pointer + (2 * sizeof(AugmentedBuffer)) + kv_entity->key->buffer_size;
     second_ab->buffer_size = kv_entity->value->buffer_size;
 

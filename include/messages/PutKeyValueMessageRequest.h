@@ -53,4 +53,22 @@ void serializePutKeyValueMessageRequest(PutKeyValueMessageRequest* message, Augm
  */
 void deserializePutKeyValueMessageRequest(AugmentedBuffer* buffer, PutKeyValueMessageRequest* return_message);
 
+void getKeySizeFromPutKeyValueBuffer(AugmentedBuffer* buffer, uint32_t* return_key_size);
+
+void getKeyFromPutKeyValueBuffer(AugmentedBuffer* buffer, char** return_key);
+
+void getValueSizeFromPutKeyValueBuffer(AugmentedBuffer* buffer, uint32_t* return_value_size);
+
+void getValueFromPutKeyValueBuffer(AugmentedBuffer* buffer, char** return_value);
+
+void calculateKeySizeOffset(AugmentedBuffer* buffer, uint32_t* return_key_size_offset);
+
+void calculateKeyOffset(AugmentedBuffer* buffer, uint32_t* return_key_offset);
+
+void calculateValueSizeOffset(AugmentedBuffer* buffer, uint32_t* return_value_size_offset);
+
+void calculateValueOffset(AugmentedBuffer* buffer, uint32_t* return_value_offset);
+
+// void allocateMemoryForPutKeyValueMessageRequest(PutKeyValueMessageRequest* message, AugmentedBuffer* buffer);
+
 #endif

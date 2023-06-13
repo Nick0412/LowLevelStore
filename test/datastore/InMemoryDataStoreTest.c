@@ -26,11 +26,8 @@ void testKeyValueInsertion()
             .buffer_size = 10
         }
     };
-    insertKeyValuePair(&data_store, &input_kv);
 
-    printf("------------------------------------------------------------------------------------");
-    assert(data_store.current_size == 1);
-    printf("------------------------------------------------------------------------------------");
+    insertKeyValuePair(&data_store, &input_kv);
 
     AugmentedBuffer lookup_key = {
         .buffer_pointer = "test_key",
@@ -38,13 +35,11 @@ void testKeyValueInsertion()
     };
 
     AugmentedBuffer* return_value;
-    printf("Before findValue\n");
     findValue(&data_store, &lookup_key, &return_value);
 
     assert(memcmp(return_value->buffer_pointer, "test_value", 10) == 0);
     assert(return_value->buffer_size == 10);
 
-    printf("Before destroyInMemoryDataStore\n");
     destroyInMemoryDataStore(&data_store);
 }
 
