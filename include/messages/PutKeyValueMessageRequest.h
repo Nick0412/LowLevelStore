@@ -69,6 +69,8 @@ void calculateValueSizeOffset(AugmentedBuffer* buffer, uint32_t* return_value_si
 
 void calculateValueOffset(AugmentedBuffer* buffer, uint32_t* return_value_offset);
 
-// void allocateMemoryForPutKeyValueMessageRequest(PutKeyValueMessageRequest* message, AugmentedBuffer* buffer);
+void allocateMemoryForPutKeyValueMessageRequest(PutKeyValueMessageRequest* message, AugmentedBuffer* buffer);
+
+void destroyMemoryForPutKeyValueMessageRequest(PutKeyValueMessageRequest* message);
 
 #endif
