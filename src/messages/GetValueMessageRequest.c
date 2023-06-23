@@ -1,6 +1,8 @@
 #include "messages/GetValueMessageRequest.h"
 #include "messages/MessageTypes.h"
+#include "messages/Constants.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 void calculateGetValueMessageRequestSize(GetValueMessageRequest* message, uint32_t* return_size)
 {
@@ -36,4 +38,50 @@ void deserializeGetValueMessageRequest(AugmentedBuffer* buffer, GetValueMessageR
     get32BitUintFromBuffer(buffer, key_size_offset, &key_size);
     return_message->key->buffer_size = key_size;
     getStringFromBuffer(buffer, key_offset, return_message->key);
+}
+
+void getValueMessageRequestCalculateKeySizeOffset(AugmentedBuffer* message, uint32_t* return_key_size_offset)
+{
+    *return_key_size_offset = MESSAGE_DATA_OFFSET;
+}
+
+void getValueMessageRequestCalculateKeyDataOffset(AugmentedBuffer* message, uint32_t* return_key_data_offset)
+{
+    uint32_t key_size_offset;
+    getValueMessageRequestCalculateKeySizeOffset(message, &key_size_offset);
+
+    *return_key_data_offset = key_size_offset + MESSAGE_SIZE_FIELD_BYTES;
+}
+
+void getValueMessageRequestGetKeySize(AugmentedBuffer* message, uint32_t* return_key_size)
+{
+    uint32_t key_size_offset;
+    getValueMessageRequestCalculateKeySizeOffset(message, &key_size_offset);
+
+    get32BitUintFromBuffer(message, key_size_offset, return_key_size);
+}
+
+void getValueMessageRequestGetKeyData(AugmentedBuffer* message, AugmentedBuffer* return_key_data)
+{
+    // Place key size into the augmented buffer field: buffer_size
+    getValueMessageRequestGetKeySize(message, &return_key_data->buffer_size);
+
+    uint32_t key_data_offset;
+    getValueMessageRequestCalculateKeyDataOffset(message, &key_data_offset);
+    getStringFromBuffer(message, key_data_offset, return_key_data);
+}
+
+void getValueMessageRequestAllocateMemory(AugmentedBuffer* message, GetValueMessageRequest* return_request)
+{
+    return_request->key = malloc(sizeof(AugmentedBuffer));
+
+    getValueMessageRequestGetKeySize(message, &return_request->key->buffer_size);
+
+    return_request->key->buffer_pointer = malloc(return_request->key->buffer_size);
+}
+
+void getValueMessageRequestDestroyMemory(GetValueMessageRequest* request)
+{
+    free(request->key->buffer_pointer);
+    free(request->key);
 }

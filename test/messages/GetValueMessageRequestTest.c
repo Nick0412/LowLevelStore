@@ -51,10 +51,41 @@ void testSerializeDeserializeGetValueMessageRequest()
     free(serialized_buffer.buffer_pointer);
 }
 
+void testAllocationSerialize()
+{
+    GetValueMessageRequest request = {
+        .key = &(AugmentedBuffer) {
+            .buffer_pointer = "testing_key",
+            .buffer_size = 11
+        }
+    };
+
+    uint32_t request_size;
+    calculateGetValueMessageRequestSize(&request, &request_size);
+
+    AugmentedBuffer serialized_message = {
+        .buffer_pointer = malloc(request_size),
+        .buffer_size = request_size
+    };
+
+    serializeGetValueMessageRequest(&request, &serialized_message);
+    GetValueMessageRequest return_request;
+    getValueMessageRequestAllocateMemory(&serialized_message, &return_request);
+    deserializeGetValueMessageRequest(&serialized_message, &return_request);
+
+    assert(areAugmentedBuffersSame(request.key, return_request.key));
+
+    getValueMessageRequestDestroyMemory(&return_request);
+    free(serialized_message.buffer_pointer);
+}
+
 int main()
 {
     printf("STARTING GET VALUE VALUE MESSAGE REQUEST TEST\n");
+
     testCalculateGetValueMessageRequestSize();
 
     testSerializeDeserializeGetValueMessageRequest();
+
+    testAllocationSerialize();
 }

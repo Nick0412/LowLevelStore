@@ -34,4 +34,16 @@ void serializeGetValueMessageRequest(GetValueMessageRequest* message, AugmentedB
  */
 void deserializeGetValueMessageRequest(AugmentedBuffer* buffer, GetValueMessageRequest* return_message);
 
+void getValueMessageRequestCalculateKeySizeOffset(AugmentedBuffer* message, uint32_t* return_key_size_offset);
+
+void getValueMessageRequestCalculateKeyDataOffset(AugmentedBuffer* message, uint32_t* return_key_data_offset);
+
+void getValueMessageRequestGetKeySize(AugmentedBuffer* message, uint32_t* return_key_size);
+
+void getValueMessageRequestGetKeyData(AugmentedBuffer* message, AugmentedBuffer* return_key_data);
+
+void getValueMessageRequestAllocateMemory(AugmentedBuffer* message, GetValueMessageRequest* return_request);
+
+void getValueMessageRequestDestroyMemory(GetValueMessageRequest* request);
+
 #endif
