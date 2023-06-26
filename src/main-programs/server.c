@@ -46,7 +46,6 @@ int main()
 
         handleMessage(&incoming_message, &store, connected_socket);
 
-
         free(incoming_message.buffer_pointer);
     }
 }

@@ -18,14 +18,16 @@ int main()
     socket_address.sin_family = AF_INET;
     socket_address.sin_port = htons(20000);
     inet_aton("127.0.0.1", &socket_address.sin_addr);
+    int reuse = 1;
+    setsockopt(socket_pointer, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
 
     connect(socket_pointer, (const struct sockaddr*)&socket_address, sizeof(socket_address));
 
     while (1)
     {
-
-
-
+        printf("Options: \n");
+        printf("1. Put key value\n");
+        printf("2. Get value \n");
         int number;
         scanf("%d", &number);
         fflush(stdin);
@@ -37,10 +39,12 @@ int main()
                 char key_buffer[50];
                 char val_buffer[50];
 
+                printf("Enter key: ");
                 fgets(key_buffer, sizeof(key_buffer), stdin); 
                 key_buffer[strcspn(key_buffer, "\n")] = 0;
                 int key_len = strlen(key_buffer);
 
+                printf("Enter value: ");
                 fgets(val_buffer, 50, stdin);
                 val_buffer[strcspn(val_buffer, "\n")] = 0;
                 int val_len = strlen(val_buffer);
@@ -88,6 +92,7 @@ int main()
             {
                 char key_buffer[50];
 
+                printf("Enter key to lookup: ");
                 fgets(key_buffer, sizeof(key_buffer), stdin); 
                 key_buffer[strcspn(key_buffer, "\n")] = 0;
                 int key_len = strlen(key_buffer);
@@ -130,9 +135,9 @@ int main()
                 };
                 deserializeGetValueMessageResponse(&incoming_buff, &res);
 
-
+                printf("Value is: ");
                 fwrite(res.value->buffer_pointer, sizeof(char), res.value->buffer_size, stdout);
-
+                printf("\n");
                 
                 free(incoming_buff.buffer_pointer);
                 free(res.value->buffer_pointer);
