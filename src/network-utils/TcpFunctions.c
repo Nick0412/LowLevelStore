@@ -1,6 +1,7 @@
 #include "network-utils/TcpFunctions.h"
 
 #include <sys/socket.h>
+#include <stdio.h>
 
 void sendBufferOverSocketWithRetry(int socket_fd, AugmentedBuffer* buffer)
 {
@@ -14,10 +15,10 @@ void sendBufferOverSocketWithRetry(int socket_fd, AugmentedBuffer* buffer)
     }
 }
 
-void receiveBufferOverSocketWithRetry(int socket_fd, AugmentedBuffer* buffer, uint32_t offset)
+void receiveBufferOverSocketWithRetry(int socket_fd, AugmentedBuffer* buffer, uint32_t offset, uint32_t shift)
 {
     uint32_t bytes_received = 0;
-    while (bytes_received < buffer->buffer_size)
+    while (bytes_received < buffer->buffer_size - shift)
     {
         char* current_offset = (char*)buffer->buffer_pointer + bytes_received + offset;
         uint32_t bytes_remaining = buffer->buffer_size - bytes_received;
@@ -34,6 +35,6 @@ void receiveBufferSizeOverSocket(int socket_fd, uint32_t* return_size)
         .buffer_size = 4
     };
 
-    receiveBufferOverSocketWithRetry(socket_fd, &temp, 0);
+    receiveBufferOverSocketWithRetry(socket_fd, &temp, 0, 0);
     get32BitUintFromBuffer(&temp, 0, return_size);
 }

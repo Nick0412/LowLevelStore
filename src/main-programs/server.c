@@ -14,8 +14,11 @@ int main()
     int socket_pointer = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in socket_address;
     socket_address.sin_family = AF_INET;
-    socket_address.sin_port = htons(15000);
+    socket_address.sin_port = htons(20000);
     inet_aton("127.0.0.1", &socket_address.sin_addr);
+
+    int reuse = 1;
+    setsockopt(socket_pointer, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
 
     bind(socket_pointer, (const struct sockaddr*)&socket_address, sizeof(socket_address));
     listen(socket_pointer, 1);
@@ -31,15 +34,18 @@ int main()
     {
         uint32_t message_size;
         receiveBufferSizeOverSocket(connected_socket, &message_size);
-        printf("Message size: %d \n", message_size);
+
 
         AugmentedBuffer incoming_message = {
             .buffer_pointer = malloc(message_size),
             .buffer_size = message_size
         };
         place32BitUintInBuffer(message_size, &incoming_message, MESSAGE_SIZE_OFFSET);
-        receiveBufferOverSocketWithRetry(connected_socket, &incoming_message, MESSAGE_TYPE_OFFSET);
+
+        receiveBufferOverSocketWithRetry(connected_socket, &incoming_message, MESSAGE_TYPE_OFFSET, 4);
+
         handleMessage(&incoming_message, &store, connected_socket);
+
 
         free(incoming_message.buffer_pointer);
     }

@@ -6,6 +6,7 @@
 #include "messages/GetValueMessageRequest.h"
 #include "messages/GetValueMessageResponse.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 void handleMessage(AugmentedBuffer* incoming_message, InMemoryDataStore* store, int socket_pointer)
 {

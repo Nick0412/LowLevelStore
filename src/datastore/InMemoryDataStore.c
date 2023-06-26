@@ -59,7 +59,8 @@ void findValue(InMemoryDataStore* store, const AugmentedBuffer* key, AugmentedBu
         }
     }
 
-    // TODO: Make error code return and remove these lines (they dont work)
+    // TODO: Fix this uncleaned memory
+    *return_value = malloc(sizeof(AugmentedBuffer));
     (*return_value)->buffer_pointer = NULL;
     (*return_value)->buffer_size = -1;
 }
