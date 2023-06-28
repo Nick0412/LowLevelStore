@@ -39,7 +39,7 @@ void place32BitUintInBuffer(uint32_t value, AugmentedBuffer* buffer, uint32_t of
  * @param offset The offset location of the integer in the buffer.
  * @param return_value The pointer holding the returned integer value.
  */
-void get32BitUintFromBuffer(AugmentedBuffer* buffer, uint32_t offset, uint32_t* return_value);
+void get32BitUintFromBuffer(const AugmentedBuffer* buffer, uint32_t offset, uint32_t* return_value);
 
 
 /**

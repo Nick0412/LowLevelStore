@@ -23,7 +23,7 @@ void place32BitUintInBuffer(uint32_t value, AugmentedBuffer* buffer, uint32_t of
     casted_buffer[offset + 3] = (network_order_value >> 24) & 0xFF;
 }
 
-void get32BitUintFromBuffer(AugmentedBuffer* buffer, uint32_t offset, uint32_t* return_value)
+void get32BitUintFromBuffer(const AugmentedBuffer* buffer, uint32_t offset, uint32_t* return_value)
 {
     char* casted_buffer = (char*)buffer->buffer_pointer;
 

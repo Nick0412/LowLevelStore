@@ -1,5 +1,9 @@
-## Running
+## Building
+To build this project, you can run the following
+``` 
+make all
 ```
-make
-```
-This will create the executable in the `bin` directory.
+
+This will create a directory called `bin/main-programs/` in which the executable targets will be placed. As of now it creates two executables called `client` and `server`.
+
+
