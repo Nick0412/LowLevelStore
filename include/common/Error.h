@@ -1,15 +1,18 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-#include <stdint.h>
-#include "BufferHelper.h"
+#include "SizeAwareBuffer.h"
 
 typedef struct Error
 {
-    int32_t error_code;
-    AugmentedBuffer* error_string;
+    void (*destroyError)(void*);
+    SizeAwareBuffer* (*describeError)(void*);
+    void* self_error_data;
+
 } Error;
 
-void initializeError(Error* error, int32_t error_code, AugmentedBuffer* error_string);
+SizeAwareBuffer* Error_DescribeError(Error* error);
+
+void Error_DestroyError(Error* error);
 
 #endif

@@ -1,7 +1,17 @@
 #include "common/Error.h"
 
-void initializeError(Error* error, int32_t error_code, AugmentedBuffer* error_string)
+#include <stdlib.h>
+
+SizeAwareBuffer* Error_DescribeError(Error* error)
 {
-    error->error_code = error_code;
-    error->error_string = error_string;
+    return error->describeError(error->self_error_data);
+}
+
+void Error_DestroyError(Error* error)
+{
+    // Not every error may need a destroy function
+    if (error->destroyError != NULL)
+    {
+        error->destroyError(error->self_error_data);
+    }
 }
