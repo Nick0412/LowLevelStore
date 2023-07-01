@@ -38,4 +38,24 @@ bool SizeAwareBuffer_AreContentsSame(const SizeAwareBuffer* buffer_1, const Size
 void SizeAwareBuffer_CopyBufferIntoOtherBuffer(const SizeAwareBuffer* source_buffer, uint32_t offset_into_source,
     uint32_t number_of_bytes, SizeAwareBuffer* destination_buffer, uint32_t offset_into_destination);
 
+/**
+ * Precondition:
+ *   - `destination_buffer` must be allocated to hold the string size
+*/
+void SizeAwareBuffer_PlaceStringInBuffer(const SizeAwareBuffer* string, SizeAwareBuffer* destination_buffer,
+    uint32_t offset_into_destination);
+
+void SizeAwareBuffer_Place32BitValue(uint32_t value, SizeAwareBuffer* destination_buffer,
+    uint32_t offset_into_destination);
+
+/**
+ * Precondition:
+ *   - `return_string` must be allocated to hold the returned string size
+*/
+void SizeAwareBuffer_GetStringFromBuffer(const SizeAwareBuffer* source_buffer, uint32_t offset_into_source,
+    SizeAwareBuffer* return_string);
+
+void SizeAwareBuffer_Get32BitValue(const SizeAwareBuffer* source_buffer, uint32_t offset_into_source,
+    uint32_t* return_value);
+
 #endif

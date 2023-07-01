@@ -5,6 +5,8 @@
 
 void verifyAllocateAndDestroyBuffer()
 {
+    printf("  - verifyAllocateAndDestroyBuffer\n");
+
     SizeAwareBuffer buff;
     SizeAwareBuffer_AllocateBuffer(10, &buff);
 
@@ -19,6 +21,8 @@ void verifyAllocateAndDestroyBuffer()
 
 void verifyContentsComparisonOnBuffersTrue()
 {
+    printf("  - verifyContentsComparisonOnBuffersTrue\n");
+
     char data1[] = { 'a', 'b', 'c', 'd' };
     SizeAwareBuffer buff1 = {
         .buffer_size = 4,
@@ -36,6 +40,8 @@ void verifyContentsComparisonOnBuffersTrue()
 
 void verifyContentsComparisonOnBuffersFalse()
 {
+    printf("  - verifyContentsComparisonOnBuffersFalse\n");
+
     char data1[] = { 'a', 'b', 'c', 'd' };
     SizeAwareBuffer buff1 = {
         .buffer_size = 4,
@@ -53,6 +59,8 @@ void verifyContentsComparisonOnBuffersFalse()
 
 void verifyCopyIntoBuffer()
 {
+    printf("  - verifyCopyIntoBuffer\n");
+
     char data1[] = { 'a', 'b', '*', '*', 'e' };
     SizeAwareBuffer buff1 = {
         .buffer_size = 5,
@@ -76,6 +84,53 @@ void verifyCopyIntoBuffer()
     assert(SizeAwareBuffer_AreContentsSame(&buff1, &buff3));
 }
 
+void verifyPlaceStringInBufferAndGet()
+{
+    printf("  - verifyPlaceStringInBufferAndGet\n");
+
+    char string_data[] = { 'a', 'b', 'c' };
+    SizeAwareBuffer string = {
+        .raw_buffer = (uint8_t*)string_data,
+        .buffer_size = 3
+    };
+
+    char other_data[] = { '1', '2', '3', '4', '5', '6' };
+    SizeAwareBuffer destination = {
+        .raw_buffer = other_data,
+        .buffer_size = 6
+    };
+
+    SizeAwareBuffer_PlaceStringInBuffer(&string, &destination, 3);
+
+    uint8_t expected[] = { '1', '2', '3', 'a', 'b', 'c' };
+    assert(memcmp(destination.raw_buffer, expected, 6) == 0);
+}
+
+void verifyPlace32BitValueAndGet()
+{
+    printf("  - verifyPlace32BitValueAndGet\n");
+
+    uint32_t value = 0xFEDCBA98;
+    uint32_t offset = 2;
+    uint8_t data[] = { 'a', 'b', 'c', 'w', 'x', 'y', 'z', 'e' };
+    SizeAwareBuffer buff = {
+        .raw_buffer = data,
+        .buffer_size = 8
+    };
+
+    SizeAwareBuffer_Place32BitValue(value, &buff, offset);
+
+    uint32_t return_value;
+    SizeAwareBuffer_Get32BitValue(&buff, offset, &return_value);
+
+    assert(buff.raw_buffer[2] == 0xFE);
+    assert(buff.raw_buffer[3] == 0xDC);
+    assert(buff.raw_buffer[4] == 0xBA);
+    assert(buff.raw_buffer[5] == 0x98);
+
+    assert(return_value == value);
+}
+
 int main()
 {
     printf("STARTING SIZE AWARE BUFFER TEST\n");
@@ -85,4 +140,8 @@ int main()
     verifyContentsComparisonOnBuffersTrue();
 
     verifyCopyIntoBuffer();
+
+    verifyPlaceStringInBufferAndGet();
+
+    verifyPlace32BitValueAndGet();
 }
