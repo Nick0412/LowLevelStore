@@ -1,32 +1,62 @@
 #include "common/Error.h"
-#include <assert.h>
-#include <string.h>
+#include "common/SizeAwareBuffer.h"
+
 #include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 
-void testInitializeError()
+typedef struct SampleError 
 {
-    Error error;
-    AugmentedBuffer buff = {
-        .buffer_pointer = "test error",
-        .buffer_size = 10
+    SizeAwareBuffer* message;
+} SampleError;
+
+void SampleError_DestroyError(void* self)
+{
+    SampleError* err = (SampleError*)self;
+    SizeAwareBuffer_DestroyBuffer(err->message);
+    free(err->message);
+    free(err);
+}
+
+SizeAwareBuffer* SampleError_DescribeError(void* self)
+{
+    SampleError* err = (SampleError*)self;
+    return err->message;
+}
+
+Error CreateSampleError()
+{
+    SampleError* sample_error = malloc(sizeof(SampleError));
+    sample_error->message = malloc(sizeof(SizeAwareBuffer));
+
+    char msg[] = "Some sample error";
+    SizeAwareBuffer_AllocateBuffer(sizeof(msg)-1, sample_error->message);
+    memcpy(sample_error->message->raw_buffer, msg, sizeof(msg)-1);
+
+    Error err = {
+        .destroyError = SampleError_DestroyError,
+        .describeError = SampleError_DescribeError,
+        .self_error_data = sample_error
     };
-    int32_t error_code = 34;
 
-    initializeError(&error, error_code, &buff);
+    return err;
+}
 
-    // Compares if 2 strings are the same (expecting 0).
-    int string_compare = strncmp(
-        error.error_string->buffer_pointer,
-        buff.buffer_pointer,
-        buff.buffer_size);
+void verifySampleError()
+{
+    printf("  - verifySampleError");
 
-    assert(error.error_code == 34);
-    assert(string_compare == 0);
+    Error err = CreateSampleError();
+    SizeAwareBuffer* msg = Error_DescribeError(&err);
+
+    assert(memcmp(msg->raw_buffer, "Some sample error", msg->buffer_size) == 0);
+
+    Error_DestroyError(&err);
 }
 
 int main()
 {
     printf("STARTING ERROR TEST\n");
 
-    testInitializeError();
+    verifySampleError();
 }
