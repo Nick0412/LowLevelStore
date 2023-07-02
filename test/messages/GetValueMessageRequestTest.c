@@ -1,82 +1,56 @@
 #include "messages/GetValueMessageRequest.h"
+#include "messages/Constants.h"
+#include "messages/MessageTypes.h"
+#include "messages/CommonUtils.h"
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 
 void testCalculateGetValueMessageRequestSize()
 {
+    printf("  - testCalculateGetValueMessageRequestSize\n");
+
     GetValueMessageRequest message = {
-        .key = &(AugmentedBuffer) {
-            .buffer_pointer = "test_key",
+        .key = {
+            .raw_buffer = (uint8_t*)"test_key",
             .buffer_size = 8
         }
     };
 
     uint32_t size;
-    calculateGetValueMessageRequestSize(&message, &size);
+    GetValueMessageRequest_CalculateSize(&message, &size);
 
-    assert(size == (4 + 4 + 4 + 8));
+    assert(size == (
+        MESSAGE_SIZE_BYTE_SIZE + MESSAGE_TYPE_BYTE_SIZE +
+        MESSAGE_SIZE_FIELD_BYTES + message.key.buffer_size));
 }
 
-void testSerializeDeserializeGetValueMessageRequest()
+void testSerializeDeserialize()
 {
-    GetValueMessageRequest message = {
-        .key = &(AugmentedBuffer) {
-            .buffer_pointer = "test_key",
-            .buffer_size = 8
+    printf("  - testSerializeDeserialize\n");
+
+    GetValueMessageRequest req = {
+        .key = {
+            .raw_buffer = (uint8_t*)"this-test-key",
+            .buffer_size = 13
         }
     };
 
-    // Get message size
     uint32_t message_size;
-    calculateGetValueMessageRequestSize(&message, &message_size);
+    GetValueMessageRequest_CalculateSize(&req, &message_size);
 
-    // Create a buffer that can hold the message size.
-    AugmentedBuffer serialized_buffer;
-    serialized_buffer.buffer_pointer = malloc(message_size);
-    serialized_buffer.buffer_size = message_size;
-    serializeGetValueMessageRequest(&message, &serialized_buffer);
+    SizeAwareBuffer buffer;
+    GetValueMessageRequest_AllocateBuffer(&req, &buffer);
+    GetValueMessageRequest_SerializeIntoBuffer(&req, &buffer);
 
-    // Create a result message that can hold all the deserialized data.
-    GetValueMessageRequest result_message;
-    result_message.key = malloc(sizeof(AugmentedBuffer));
-    result_message.key->buffer_pointer = malloc(8);
-    result_message.key->buffer_size = 8;
-    deserializeGetValueMessageRequest(&serialized_buffer, &result_message);
+    GetValueMessageRequest output_req;
+    GetValueMessageRequest_AllocateMessage(&buffer, &output_req);
+    GetValueMessageRequest_Deserialize(&buffer, &output_req);
 
-    assert(areAugmentedBuffersSame(result_message.key, message.key));
-    
-    free(result_message.key->buffer_pointer);
-    free(result_message.key);
-    free(serialized_buffer.buffer_pointer);
-}
+    assert(SizeAwareBuffer_AreContentsSame(&req.key, &output_req.key));
 
-void testAllocationSerialize()
-{
-    GetValueMessageRequest request = {
-        .key = &(AugmentedBuffer) {
-            .buffer_pointer = "testing_key",
-            .buffer_size = 11
-        }
-    };
-
-    uint32_t request_size;
-    calculateGetValueMessageRequestSize(&request, &request_size);
-
-    AugmentedBuffer serialized_message = {
-        .buffer_pointer = malloc(request_size),
-        .buffer_size = request_size
-    };
-
-    serializeGetValueMessageRequest(&request, &serialized_message);
-    GetValueMessageRequest return_request;
-    getValueMessageRequestAllocateMemory(&serialized_message, &return_request);
-    deserializeGetValueMessageRequest(&serialized_message, &return_request);
-
-    assert(areAugmentedBuffersSame(request.key, return_request.key));
-
-    getValueMessageRequestDestroyMemory(&return_request);
-    free(serialized_message.buffer_pointer);
+    GetValueMessageRequest_DestroyBuffer(&buffer);
+    GetValueMessageRequest_DestroyMessage(&output_req);
 }
 
 int main()
@@ -85,7 +59,5 @@ int main()
 
     testCalculateGetValueMessageRequestSize();
 
-    testSerializeDeserializeGetValueMessageRequest();
-
-    testAllocationSerialize();
+    testSerializeDeserialize();
 }

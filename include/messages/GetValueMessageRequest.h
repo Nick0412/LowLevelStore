@@ -1,8 +1,8 @@
 #ifndef GET_VALUE_MESSAGE_REQUEST_H
 #define GET_VALUE_MESSAGE_REQUEST_H
 
-#include "common/BufferHelper.h"
 #include "common/MemoryPool.h"
+#include "common/SizeAwareBuffer.h"
 
 /**
  * Size     | Type      | Key Size  | Key String
@@ -11,39 +11,58 @@
  */
 typedef struct GetValueMessageRequest
 {
-    AugmentedBuffer* key;
+    SizeAwareBuffer key;
 
 } GetValueMessageRequest;
 
-void calculateGetValueMessageRequestSize(GetValueMessageRequest* message, uint32_t* return_size);
+/**
+ *********************************************************************
+ * Rewritten section for cleanup.
+ *********************************************************************
+ */
 
-void serializeGetValueMessageRequest(GetValueMessageRequest* message, AugmentedBuffer* return_buffer);
+void GetValueMessageRequest_CalculateSize(const GetValueMessageRequest* request, uint32_t* return_request_size);
 
 /**
- * @brief 
- * 
- * `return_message` needs to be properly allocated for this includes all of its dependent fields
- * 
- * - GetValueMessageRequest (return_message)
- *   - AugmentedBuffer* (key) [needs to be allocated]
- *     - void* (buffer_pointer) [needs to be allocated]
- *     - int (buffer_size) [needs to be allocated]
- * 
- * @param buffer 
- * @param return_message 
+ * Precondition: 
+ *   - `return_message_bytes` must be allocated to hold the request
  */
-void deserializeGetValueMessageRequest(AugmentedBuffer* buffer, GetValueMessageRequest* return_message);
+void GetValueMessageRequest_SerializeIntoBuffer(const GetValueMessageRequest* request, SizeAwareBuffer* return_message_bytes);
 
-void getValueMessageRequestCalculateKeySizeOffset(AugmentedBuffer* message, uint32_t* return_key_size_offset);
+/**
+ * Precondition:
+ *   - `return_request` must be allocated to hold the deserialized message bytes
+*/
+void GetValueMessageRequest_Deserialize(const SizeAwareBuffer* message_bytes, GetValueMessageRequest* return_request);
 
-void getValueMessageRequestCalculateKeyDataOffset(AugmentedBuffer* message, uint32_t* return_key_data_offset);
+/**
+ * @brief Allocates the space needed inside `return_message_bytes` to store the `request`.
+ * 
+ * Postcondition:
+ *   - `return_message_bytes` is allocated and must be cleaned up
+*/
+void GetValueMessageRequest_AllocateBuffer(const GetValueMessageRequest* request, SizeAwareBuffer* return_message_bytes);
 
-void getValueMessageRequestGetKeySize(AugmentedBuffer* message, uint32_t* return_key_size);
+void GetValueMessageRequest_DestroyBuffer(SizeAwareBuffer* message_bytes);
 
-void getValueMessageRequestGetKeyData(AugmentedBuffer* message, AugmentedBuffer* return_key_data);
+/**
+ * Postcondition:
+ *   - `return_request` is allocated and must be cleaned up
+*/
+void GetValueMessageRequest_AllocateMessage(const SizeAwareBuffer* message_bytes, GetValueMessageRequest* return_request);
 
-void getValueMessageRequestAllocateMemory(AugmentedBuffer* message, GetValueMessageRequest* return_request);
+void GetValueMessageRequest_DestroyMessage(GetValueMessageRequest* request);
 
-void getValueMessageRequestDestroyMemory(GetValueMessageRequest* request);
+void GetValueMessageRequest_GetKeySizeOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_key_size_offset);
+
+void GetValueMessageRequest_GetKeySize(const SizeAwareBuffer* message_bytes, uint32_t* return_key_size);
+
+void GetValueMessageRequest_GetKeyOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_key_offset);
+
+/**
+ * Precondition:
+ *   - `return_key` must be allocated to hold the key size
+*/
+void GetValueMessageRequest_GetKey(const SizeAwareBuffer* message_bytes, SizeAwareBuffer* return_key);
 
 #endif

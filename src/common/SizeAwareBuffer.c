@@ -91,3 +91,11 @@ void SizeAwareBuffer_Get32BitValue(const SizeAwareBuffer* source_buffer, uint32_
 
     *return_value = ntohl(*return_value);
 }
+
+void SizeAwareBuffer_PrintBuffer(const SizeAwareBuffer* buffer)
+{
+    printf("Buffer Size: %d\n", buffer->buffer_size);
+    printf("Buffer Content: ");
+    fwrite(buffer->raw_buffer, sizeof(uint8_t), buffer->buffer_size, stdout);
+    printf("\n");
+}
