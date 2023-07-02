@@ -58,4 +58,6 @@ void SizeAwareBuffer_GetStringFromBuffer(const SizeAwareBuffer* source_buffer, u
 void SizeAwareBuffer_Get32BitValue(const SizeAwareBuffer* source_buffer, uint32_t offset_into_source,
     uint32_t* return_value);
 
+void SizeAwareBuffer_PrintBuffer(const SizeAwareBuffer* buffer);
+
 #endif

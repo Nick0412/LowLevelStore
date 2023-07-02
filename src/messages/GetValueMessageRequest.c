@@ -1,87 +1,102 @@
 #include "messages/GetValueMessageRequest.h"
 #include "messages/MessageTypes.h"
 #include "messages/Constants.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-void calculateGetValueMessageRequestSize(GetValueMessageRequest* message, uint32_t* return_size)
-{
-    uint32_t temp_size = 4 + 4 + 4 + message->key->buffer_size;
-
-    *return_size = temp_size;
-}
-
-void serializeGetValueMessageRequest(GetValueMessageRequest* message, AugmentedBuffer* return_buffer)
-{
-    // Place message size
-    uint32_t offset = 0;
-    place32BitUintInBuffer(return_buffer->buffer_size, return_buffer, offset);
-
-    // Place type of message
-    offset += 4;
-    place32BitUintInBuffer((uint32_t)GET_VALUE_MESSAGE_REQUEST_TYPE, return_buffer, offset);
-
-    // Place size of key string
-    offset += 4;
-    place32BitUintInBuffer(message->key->buffer_size, return_buffer, offset);
-
-    // Place key string
-    offset += 4;
-    placeStringInBuffer(message->key, return_buffer, offset);
-}
-
-void deserializeGetValueMessageRequest(AugmentedBuffer* buffer, GetValueMessageRequest* return_message)
-{   
-    uint32_t key_size_offset = 8;
-    uint32_t key_offset = key_size_offset + 4;
-    uint32_t key_size;
-    get32BitUintFromBuffer(buffer, key_size_offset, &key_size);
-    return_message->key->buffer_size = key_size;
-    getStringFromBuffer(buffer, key_offset, return_message->key);
-}
-
-void getValueMessageRequestCalculateKeySizeOffset(AugmentedBuffer* message, uint32_t* return_key_size_offset)
+void GetValueMessageRequest_GetKeySizeOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_key_size_offset)
 {
     *return_key_size_offset = MESSAGE_DATA_OFFSET;
 }
 
-void getValueMessageRequestCalculateKeyDataOffset(AugmentedBuffer* message, uint32_t* return_key_data_offset)
+void GetValueMessageRequest_GetKeySize(const SizeAwareBuffer* message_bytes, uint32_t* return_key_size)
 {
     uint32_t key_size_offset;
-    getValueMessageRequestCalculateKeySizeOffset(message, &key_size_offset);
+    GetValueMessageRequest_GetKeySizeOffset(message_bytes, &key_size_offset);
 
-    *return_key_data_offset = key_size_offset + MESSAGE_SIZE_FIELD_BYTES;
+    SizeAwareBuffer_Get32BitValue(message_bytes, key_size_offset, return_key_size);
 }
 
-void getValueMessageRequestGetKeySize(AugmentedBuffer* message, uint32_t* return_key_size)
+void GetValueMessageRequest_GetKeyOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_key_offset)
 {
     uint32_t key_size_offset;
-    getValueMessageRequestCalculateKeySizeOffset(message, &key_size_offset);
+    GetValueMessageRequest_GetKeySizeOffset(message_bytes, &key_size_offset);
 
-    get32BitUintFromBuffer(message, key_size_offset, return_key_size);
+    *return_key_offset = key_size_offset + MESSAGE_SIZE_FIELD_BYTES;
 }
 
-void getValueMessageRequestGetKeyData(AugmentedBuffer* message, AugmentedBuffer* return_key_data)
+void GetValueMessageRequest_GetKey(const SizeAwareBuffer* message_bytes, SizeAwareBuffer* return_key)
 {
-    // Place key size into the augmented buffer field: buffer_size
-    getValueMessageRequestGetKeySize(message, &return_key_data->buffer_size);
+    uint32_t key_offset;
+    GetValueMessageRequest_GetKeyOffset(message_bytes, &key_offset);
 
-    uint32_t key_data_offset;
-    getValueMessageRequestCalculateKeyDataOffset(message, &key_data_offset);
-    getStringFromBuffer(message, key_data_offset, return_key_data);
+    SizeAwareBuffer_GetStringFromBuffer(message_bytes, key_offset, return_key);
 }
 
-void getValueMessageRequestAllocateMemory(AugmentedBuffer* message, GetValueMessageRequest* return_request)
+void GetValueMessageRequest_CalculateSize(const GetValueMessageRequest* request, uint32_t* return_request_size)
 {
-    return_request->key = malloc(sizeof(AugmentedBuffer));
+    uint32_t message_size = 0;
+    message_size += MESSAGE_SIZE_BYTE_SIZE;
+    message_size += MESSAGE_TYPE_BYTE_SIZE;
+    message_size += MESSAGE_SIZE_FIELD_BYTES;
+    message_size += request->key.buffer_size;
 
-    getValueMessageRequestGetKeySize(message, &return_request->key->buffer_size);
-
-    return_request->key->buffer_pointer = malloc(return_request->key->buffer_size);
+    *return_request_size = message_size;
 }
 
-void getValueMessageRequestDestroyMemory(GetValueMessageRequest* request)
+void GetValueMessageRequest_AllocateBuffer(const GetValueMessageRequest* request, SizeAwareBuffer* return_message_bytes)
 {
-    free(request->key->buffer_pointer);
-    free(request->key);
+    uint32_t message_size;
+    GetValueMessageRequest_CalculateSize(request, &message_size);
+
+    SizeAwareBuffer_AllocateBuffer(message_size, return_message_bytes);
+}
+
+void GetValueMessageRequest_DestroyBuffer(SizeAwareBuffer* message_bytes)
+{
+    SizeAwareBuffer_DestroyBuffer(message_bytes);
+}
+
+void GetValueMessageRequest_AllocateMessage(const SizeAwareBuffer* message_bytes, GetValueMessageRequest* return_request)
+{
+    uint32_t key_size;
+    GetValueMessageRequest_GetKeySize(message_bytes, &key_size);
+
+    SizeAwareBuffer_AllocateBuffer(key_size, &return_request->key);
+}
+
+void GetValueMessageRequest_DestroyMessage(GetValueMessageRequest* request)
+{
+    SizeAwareBuffer_DestroyBuffer(&request->key);
+}
+
+void GetValueMessageRequest_SerializeIntoBuffer(const GetValueMessageRequest* request, SizeAwareBuffer* return_message_bytes)
+{
+    // Place message size
+    uint32_t offset = 0;
+    uint32_t message_size;
+    GetValueMessageRequest_CalculateSize(request, &message_size);
+    SizeAwareBuffer_Place32BitValue(message_size, return_message_bytes, offset);
+
+    // Place message type
+    offset += MESSAGE_SIZE_BYTE_SIZE;
+    MessageType message_type = GET_VALUE_MESSAGE_REQUEST_TYPE;
+    SizeAwareBuffer_Place32BitValue((uint32_t)message_type, return_message_bytes, offset);
+
+    // Place key size
+    offset += MESSAGE_TYPE_BYTE_SIZE;
+    SizeAwareBuffer_Place32BitValue(request->key.buffer_size, return_message_bytes, offset);
+
+    // Place key data
+    offset += MESSAGE_SIZE_FIELD_BYTES;
+    SizeAwareBuffer_PlaceStringInBuffer(&request->key, return_message_bytes, offset);
+}
+
+void GetValueMessageRequest_Deserialize(const SizeAwareBuffer* message_bytes, GetValueMessageRequest* return_request)
+{
+    uint32_t key_offset;
+    GetValueMessageRequest_GetKeyOffset(message_bytes, &key_offset);
+
+    SizeAwareBuffer_GetStringFromBuffer(message_bytes, key_offset, &return_request->key);
 }
