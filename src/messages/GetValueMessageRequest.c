@@ -7,6 +7,9 @@
 
 void GetValueMessageRequest_GetKeySizeOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_key_size_offset)
 {
+    // Cast to void to get around compiler warning "unused-parameter"
+    (void)message_bytes;
+
     *return_key_size_offset = MESSAGE_DATA_OFFSET;
 }
 

@@ -9,7 +9,7 @@ RECURSE = $(foreach dir,$(wildcard $1*),$(call RECURSE,$(dir)/,$2)$(filter $(sub
 #############################################################################
 # C Pre Processor flags
 CPPFLAGS 	:= -Iinclude
-CFLAGS   	:= -Wall
+CFLAGS   	:= -Wall -Wextra
 LDFLAGS  	:=
 LDLIBS   	:=
 
@@ -101,7 +101,7 @@ $(foreach test_file,$(TEST_FILES_CLEAN),$(eval $(call TEST_EXE_TEMPLATE,$(test_f
 
 all: $(MAIN_PROGRAMS_EXE_LIST)
 
-test: $(TEST_EXES) all
+test: $(TEST_EXES)
 	$(info ************  RUNNING TESTS ************)
 	@for test in $(TEST_EXES); do \
 		./$$test; \

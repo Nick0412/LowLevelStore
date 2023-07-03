@@ -22,7 +22,7 @@ void insertKeyValuePair(InMemoryDataStore* store, KeyValueEntity* kv_entity)
 {
     AugmentedBuffer* test_if_value_exists;
     findValue(store, kv_entity->key, &test_if_value_exists);
-    if (test_if_value_exists->buffer_size != -1)
+    if (test_if_value_exists->buffer_size == 0)
     {
         return;
     }
@@ -50,7 +50,7 @@ void insertKeyValuePair(InMemoryDataStore* store, KeyValueEntity* kv_entity)
 
 void findValue(InMemoryDataStore* store, const AugmentedBuffer* key, AugmentedBuffer** return_value)
 {
-    for (int i = 0; i < store->current_size; i++)
+    for (uint32_t i = 0; i < store->current_size; i++)
     {   
         if (areAugmentedBuffersSame(key, store->data[i].key))
         {
