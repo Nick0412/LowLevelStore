@@ -96,7 +96,7 @@ void verifyPlaceStringInBufferAndGet()
 
     char other_data[] = { '1', '2', '3', '4', '5', '6' };
     SizeAwareBuffer destination = {
-        .raw_buffer = other_data,
+        .raw_buffer = (uint8_t*)other_data,
         .buffer_size = 6
     };
 
