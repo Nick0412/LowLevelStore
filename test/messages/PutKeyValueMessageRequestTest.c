@@ -7,12 +7,12 @@
 void testCalculatePutKeyMessageRequestSize()
 {
     PutKeyValueMessageRequest message = {
-        .key = &(AugmentedBuffer) {
-            .buffer_pointer = "test_key",
+        .key = &(SizeAwareBuffer) {
+            .raw_buffer = (uint8_t*)"test_key",
             .buffer_size = 8
         },
-        .value = &(AugmentedBuffer) {
-            .buffer_pointer = "test_value",
+        .value = &(SizeAwareBuffer) {
+            .raw_buffer = (uint8_t*)"test_value",
             .buffer_size = 10
         }
     };
@@ -26,12 +26,12 @@ void testCalculatePutKeyMessageRequestSize()
 void testSerializeDeserializePutKeyValueMessageRequest()
 {
     PutKeyValueMessageRequest message = {
-        .key = &(AugmentedBuffer) {
-            .buffer_pointer = "test_key",
+        .key = &(SizeAwareBuffer) {
+            .raw_buffer = (uint8_t*)"test_key",
             .buffer_size = 8
         },
-        .value = &(AugmentedBuffer) {
-            .buffer_pointer = "test_value",
+        .value = &(SizeAwareBuffer) {
+            .raw_buffer = (uint8_t*)"test_value",
             .buffer_size = 10
         }
     };
@@ -39,43 +39,43 @@ void testSerializeDeserializePutKeyValueMessageRequest()
     // Serialize
     uint32_t message_size;
     calculatePutKeyValueMessageRequestSize(&message, &message_size);
-    AugmentedBuffer serialized_buffer = {
-        .buffer_pointer = malloc(message_size),
+    SizeAwareBuffer serialized_buffer = {
+        .raw_buffer = malloc(message_size),
         .buffer_size = message_size
     };
     serializePutKeyValueMessageRequest(&message, &serialized_buffer);
 
     // Deserialize
     PutKeyValueMessageRequest result_message;
-    result_message.key = malloc(sizeof(AugmentedBuffer));
-    result_message.key->buffer_pointer = malloc(8);
+    result_message.key = malloc(sizeof(SizeAwareBuffer));
+    result_message.key->raw_buffer = malloc(8);
     result_message.key->buffer_size = 8;
-    result_message.value = malloc(sizeof(AugmentedBuffer));
-    result_message.value->buffer_pointer = malloc(10);
+    result_message.value = malloc(sizeof(SizeAwareBuffer));
+    result_message.value->raw_buffer = malloc(10);
     result_message.value->buffer_size = 10;
     deserializePutKeyValueMessageRequest(&serialized_buffer, &result_message);
 
     // Test
-    assert(areAugmentedBuffersSame(result_message.key, message.key));
-    assert(areAugmentedBuffersSame(result_message.value, message.value));
+    assert(SizeAwareBuffer_AreContentsSame(result_message.key, message.key));
+    assert(SizeAwareBuffer_AreContentsSame(result_message.value, message.value));
 
     // Cleanup
-    free(serialized_buffer.buffer_pointer);
-    free(result_message.key->buffer_pointer);
+    free(serialized_buffer.raw_buffer);
+    free(result_message.key->raw_buffer);
     free(result_message.key);
-    free(result_message.value->buffer_pointer);
+    free(result_message.value->raw_buffer);
     free(result_message.value);
 }
 
 void testGetKeyAndGetKeySize()
 {
     PutKeyValueMessageRequest message = {
-        .key = &(AugmentedBuffer) {
-            .buffer_pointer = "key1",
+        .key = &(SizeAwareBuffer) {
+            .raw_buffer = (uint8_t*)"key1",
             .buffer_size = 4
         },
-        .value = &(AugmentedBuffer) {
-            .buffer_pointer = "value1",
+        .value = &(SizeAwareBuffer) {
+            .raw_buffer = (uint8_t*)"value1",
             .buffer_size = 6
         }
     };
@@ -83,8 +83,8 @@ void testGetKeyAndGetKeySize()
     // Serialize
     uint32_t message_size;
     calculatePutKeyValueMessageRequestSize(&message, &message_size);
-    AugmentedBuffer serialized_buffer = {
-        .buffer_pointer = malloc(message_size),
+    SizeAwareBuffer serialized_buffer = {
+        .raw_buffer = malloc(message_size),
         .buffer_size = message_size
     };
     serializePutKeyValueMessageRequest(&message, &serialized_buffer);
@@ -102,18 +102,18 @@ void testGetKeyAndGetKeySize()
     assert(memcmp(string_pointer_actual, "key1", 4) == 0);
 
     // Cleanup
-    free(serialized_buffer.buffer_pointer);
+    free(serialized_buffer.raw_buffer);
 }
 
 void testGetValueAndGetValueSize()
 {
     PutKeyValueMessageRequest message = {
-        .key = &(AugmentedBuffer) {
-            .buffer_pointer = "key1",
+        .key = &(SizeAwareBuffer) {
+            .raw_buffer = (uint8_t*)"key1",
             .buffer_size = 4
         },
-        .value = &(AugmentedBuffer) {
-            .buffer_pointer = "value1",
+        .value = &(SizeAwareBuffer) {
+            .raw_buffer = (uint8_t*)"value1",
             .buffer_size = 6
         }
     };
@@ -121,8 +121,8 @@ void testGetValueAndGetValueSize()
     // Serialize
     uint32_t message_size;
     calculatePutKeyValueMessageRequestSize(&message, &message_size);
-    AugmentedBuffer serialized_buffer = {
-        .buffer_pointer = malloc(message_size),
+    SizeAwareBuffer serialized_buffer = {
+        .raw_buffer = malloc(message_size),
         .buffer_size = message_size
     };
     serializePutKeyValueMessageRequest(&message, &serialized_buffer);
@@ -140,18 +140,18 @@ void testGetValueAndGetValueSize()
     assert(memcmp(value_actual, "value1", 6) == 0);
 
     // Cleanup
-    free(serialized_buffer.buffer_pointer);
+    free(serialized_buffer.raw_buffer);
 }
 
 void testOffsetCalculationsPutKeyValueMessage()
 {
     PutKeyValueMessageRequest message = {
-        .key = &(AugmentedBuffer) {
-            .buffer_pointer = "abcde",
+        .key = &(SizeAwareBuffer) {
+            .raw_buffer = (uint8_t*)"abcde",
             .buffer_size = 5
         },
-        .value = &(AugmentedBuffer) {
-            .buffer_pointer = "testing123",
+        .value = &(SizeAwareBuffer) {
+            .raw_buffer = (uint8_t*)"testing123",
             .buffer_size = 10
         }
     };
@@ -159,8 +159,8 @@ void testOffsetCalculationsPutKeyValueMessage()
     // Serialize data
     uint32_t message_size;
     calculatePutKeyValueMessageRequestSize(&message, &message_size);
-    AugmentedBuffer serialized_buffer = {
-        .buffer_pointer = malloc(message_size),
+    SizeAwareBuffer serialized_buffer = {
+        .raw_buffer = malloc(message_size),
         .buffer_size = message_size
     };
     serializePutKeyValueMessageRequest(&message, &serialized_buffer);
@@ -182,7 +182,7 @@ void testOffsetCalculationsPutKeyValueMessage()
     assert(value_size_offset == 17);
     assert(value_offset == 21);
 
-    free(serialized_buffer.buffer_pointer);
+    free(serialized_buffer.raw_buffer);
 }
 
 int main()

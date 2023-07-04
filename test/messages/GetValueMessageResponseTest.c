@@ -6,8 +6,8 @@
 void testCalculateGetValueMessageRequestSize()
 {
     GetValueMessageResponse message = {
-        .value = &(AugmentedBuffer) {
-            .buffer_pointer = "test_value",
+        .value = &(SizeAwareBuffer) {
+            .raw_buffer = (uint8_t*)"test_value",
             .buffer_size = 10
         }
     };
@@ -21,32 +21,32 @@ void testCalculateGetValueMessageRequestSize()
 void testSerializeDeserializeGetValueMessageResponse()
 {
     GetValueMessageResponse message = {
-        .value = &(AugmentedBuffer) {
-            .buffer_pointer = "test_value",
+        .value = &(SizeAwareBuffer) {
+            .raw_buffer = (uint8_t*)"test_value",
             .buffer_size = 10
         }
     };
 
     uint32_t message_size;
     calculateGetValueMessageResponseSize(&message, &message_size);
-    AugmentedBuffer serialized_buffer = {
-        .buffer_pointer = malloc(message_size),
+    SizeAwareBuffer serialized_buffer = {
+        .raw_buffer = malloc(message_size),
         .buffer_size = message_size
     };
     serializeGetValueMessageResponse(&message, &serialized_buffer);
 
     GetValueMessageResponse result_message;
-    result_message.value = malloc (sizeof(AugmentedBuffer));
+    result_message.value = malloc (sizeof(SizeAwareBuffer));
     // In the future we may want helper functions to grab the size of these fields from the serialized
     // buffer.
-    result_message.value->buffer_pointer = malloc(10);
+    result_message.value->raw_buffer = malloc(10);
     result_message.value->buffer_size = 10;
     deserializeGetValueMessageResponse(&serialized_buffer, &result_message);
 
-    assert(areAugmentedBuffersSame(message.value, result_message.value));
+    assert(SizeAwareBuffer_AreContentsSame(message.value, result_message.value));
 
-    free(serialized_buffer.buffer_pointer);
-    free(result_message.value->buffer_pointer);
+    free(serialized_buffer.raw_buffer);
+    free(result_message.value->raw_buffer);
     free(result_message.value);    
 }
 

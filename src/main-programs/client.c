@@ -50,12 +50,12 @@ int main()
                 int val_len = strlen(val_buffer);
 
                 PutKeyValueMessageRequest req = {
-                    .key = &(AugmentedBuffer) {
-                        .buffer_pointer = key_buffer,
+                    .key = &(SizeAwareBuffer) {
+                        .raw_buffer = key_buffer,
                         .buffer_size = key_len
                     },
-                    .value = &(AugmentedBuffer) {
-                        .buffer_pointer = val_buffer,
+                    .value = &(SizeAwareBuffer) {
+                        .raw_buffer = val_buffer,
                         .buffer_size = val_len
                     }
                 };
@@ -63,28 +63,28 @@ int main()
                 uint32_t req_size;
                 calculatePutKeyValueMessageRequestSize(&req, &req_size);
 
-                AugmentedBuffer buff = {
-                    .buffer_pointer = malloc(req_size),
+                SizeAwareBuffer buff = {
+                    .raw_buffer = malloc(req_size),
                     .buffer_size = req_size
                 };
                 serializePutKeyValueMessageRequest(&req, &buff);
 
                 sendBufferOverSocketWithRetry(socket_pointer, &buff);
-                free(buff.buffer_pointer);
+                free(buff.raw_buffer);
 
                 uint32_t incoming_size;
                 receiveBufferSizeOverSocket(socket_pointer, &incoming_size);
-                AugmentedBuffer incoming_buff = {
-                    .buffer_pointer = malloc(incoming_size),
+                SizeAwareBuffer incoming_buff = {
+                    .raw_buffer = malloc(incoming_size),
                     .buffer_size = incoming_size
                 };
 
-                place32BitUintInBuffer(incoming_size, &incoming_buff, MESSAGE_SIZE_OFFSET);
+                SizeAwareBuffer_Place32BitValue(incoming_size, &incoming_buff, MESSAGE_SIZE_OFFSET);
                 receiveBufferOverSocketWithRetry(socket_pointer, &incoming_buff, MESSAGE_TYPE_OFFSET, 4);
 
                 PutKeyValueMessageResponse res;
                 deserializePutKeyValueMessageResponse(&incoming_buff, &res);
-                free(incoming_buff.buffer_pointer);
+                free(incoming_buff.raw_buffer);
 
                 break;
             }
@@ -98,49 +98,49 @@ int main()
                 int key_len = strlen(key_buffer);
 
                 GetValueMessageRequest req = {
-                    .key = &(AugmentedBuffer) {
-                        .buffer_pointer = key_buffer,
+                    .key = &(SizeAwareBuffer) {
+                        .raw_buffer = key_buffer,
                         .buffer_size = key_len
                     }
                 };
 
                 uint32_t req_size;
                 calculateGetValueMessageRequestSize(&req, &req_size);
-                AugmentedBuffer buff = {
-                    .buffer_pointer = malloc(req_size),
+                SizeAwareBuffer buff = {
+                    .raw_buffer = malloc(req_size),
                     .buffer_size = req_size
                 };
 
                 serializeGetValueMessageRequest(&req, &buff);
                 sendBufferOverSocketWithRetry(socket_pointer, &buff);
-                free(buff.buffer_pointer);
+                free(buff.raw_buffer);
 
                 uint32_t incoming_size;
                 receiveBufferSizeOverSocket(socket_pointer, &incoming_size);
-                AugmentedBuffer incoming_buff = {
-                    .buffer_pointer = malloc(incoming_size),
+                SizeAwareBuffer incoming_buff = {
+                    .raw_buffer = malloc(incoming_size),
                     .buffer_size = incoming_size
                 };
 
-                place32BitUintInBuffer(incoming_size, &incoming_buff, MESSAGE_SIZE_OFFSET);
+                SizeAwareBuffer_Place32BitValue(incoming_size, &incoming_buff, MESSAGE_SIZE_OFFSET);
                 receiveBufferOverSocketWithRetry(socket_pointer, &incoming_buff, MESSAGE_TYPE_OFFSET, 4);
 
                 uint32_t value_size;
-                get32BitUintFromBuffer(&incoming_buff, 12, &value_size);
+                SizeAwareBuffer_Get32BitValue(&incoming_buff, 12, &value_size);
                 GetValueMessageResponse res = {
-                    .value = &(AugmentedBuffer) {
-                        .buffer_pointer = malloc(value_size),
+                    .value = &(SizeAwareBuffer) {
+                        .raw_buffer = malloc(value_size),
                         .buffer_size = value_size
                     }
                 };
                 deserializeGetValueMessageResponse(&incoming_buff, &res);
 
                 printf("Value is: ");
-                fwrite(res.value->buffer_pointer, sizeof(char), res.value->buffer_size, stdout);
+                fwrite(res.value->raw_buffer, sizeof(char), res.value->buffer_size, stdout);
                 printf("\n");
                 
-                free(incoming_buff.buffer_pointer);
-                free(res.value->buffer_pointer);
+                free(incoming_buff.raw_buffer);
+                free(res.value->raw_buffer);
 
                 break;
             }

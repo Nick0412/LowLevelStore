@@ -15,79 +15,79 @@ void calculatePutKeyValueMessageRequestSize(PutKeyValueMessageRequest* message, 
     *return_size = temp_size;
 }
 
-void serializePutKeyValueMessageRequest(PutKeyValueMessageRequest* message, AugmentedBuffer* buffer)
+void serializePutKeyValueMessageRequest(PutKeyValueMessageRequest* message, SizeAwareBuffer* buffer)
 {
     // Place size of message
     uint32_t offset = 0;
-    place32BitUintInBuffer(buffer->buffer_size, buffer, offset);
+    SizeAwareBuffer_Place32BitValue(buffer->buffer_size, buffer, offset);
 
     // Place type of message
     offset += 4;
-    place32BitUintInBuffer((uint32_t)PUT_KEY_VALUE_MESSAGE_REQUEST_TYPE, buffer, offset);
+    SizeAwareBuffer_Place32BitValue((uint32_t)PUT_KEY_VALUE_MESSAGE_REQUEST_TYPE, buffer, offset);
 
     // Place size of key string
     offset += 4;
-    place32BitUintInBuffer(message->key->buffer_size, buffer, offset);
+    SizeAwareBuffer_Place32BitValue(message->key->buffer_size, buffer, offset);
 
     // Place key string
     offset += 4;
-    placeStringInBuffer(message->key, buffer, offset);
+    SizeAwareBuffer_PlaceStringInBuffer(message->key, buffer, offset);
 
     // Place size of value string
     offset += message->key->buffer_size;
-    place32BitUintInBuffer(message->value->buffer_size, buffer, offset);
+    SizeAwareBuffer_Place32BitValue(message->value->buffer_size, buffer, offset);
 
     // Place value string in buffer
     offset += 4;
-    placeStringInBuffer(message->value, buffer, offset);
+    SizeAwareBuffer_PlaceStringInBuffer(message->value, buffer, offset);
 }
 
-void deserializePutKeyValueMessageRequest(AugmentedBuffer* buffer, PutKeyValueMessageRequest* return_message)
+void deserializePutKeyValueMessageRequest(SizeAwareBuffer* buffer, PutKeyValueMessageRequest* return_message)
 {
     // Get key from buffer
     uint32_t key_size_offset = 8;
     uint32_t key_offset = key_size_offset + 4;
     uint32_t key_size;
-    get32BitUintFromBuffer(buffer, key_size_offset, &key_size);
+    SizeAwareBuffer_Get32BitValue(buffer, key_size_offset, &key_size);
     // TODO: Determine if the following line needs to be here as we are expecting the `return_message`
     // key->buffer_size to be set before `deserializePutKeyValueMessageRequest` is called.
     return_message->key->buffer_size = key_size;
-    getStringFromBuffer(buffer, key_offset, return_message->key);
+    SizeAwareBuffer_GetStringFromBuffer(buffer, key_offset, return_message->key);
 
     // Get value from buffer
     uint32_t value_size_offset = key_offset + key_size;
     uint32_t value_offset = value_size_offset + 4;
     uint32_t value_size;
-    get32BitUintFromBuffer(buffer, value_size_offset, &value_size);
+    SizeAwareBuffer_Get32BitValue(buffer, value_size_offset, &value_size);
     // TODO: Same as the above TODO.
     return_message->value->buffer_size = value_size;
-    getStringFromBuffer(buffer, value_offset, return_message->value);
+    SizeAwareBuffer_GetStringFromBuffer(buffer, value_offset, return_message->value);
 }
 
-void getKeySizeFromPutKeyValueBuffer(AugmentedBuffer* buffer, uint32_t* return_key_size)
+void getKeySizeFromPutKeyValueBuffer(SizeAwareBuffer* buffer, uint32_t* return_key_size)
 {
     uint32_t key_size_offset = 8;
-    get32BitUintFromBuffer(buffer, key_size_offset, return_key_size);
+    SizeAwareBuffer_Get32BitValue(buffer, key_size_offset, return_key_size);
 }
 
-void getKeyFromPutKeyValueBuffer(AugmentedBuffer* buffer, char** return_key)
+void getKeyFromPutKeyValueBuffer(SizeAwareBuffer* buffer, char** return_key)
 {
     uint32_t offset = 12;
 
-    *return_key = (char*)buffer->buffer_pointer + offset;
+    *return_key = (char*)buffer->raw_buffer + offset;
 }
 
-void getValueSizeFromPutKeyValueBuffer(AugmentedBuffer* buffer, uint32_t* return_value_size)
+void getValueSizeFromPutKeyValueBuffer(SizeAwareBuffer* buffer, uint32_t* return_value_size)
 {
     uint32_t value_size_offset = 12;
     uint32_t key_size;
     getKeySizeFromPutKeyValueBuffer(buffer, &key_size);
     value_size_offset += key_size;
 
-    get32BitUintFromBuffer(buffer, value_size_offset, return_value_size);
+    SizeAwareBuffer_Get32BitValue(buffer, value_size_offset, return_value_size);
 }
 
-void getValueFromPutKeyValueBuffer(AugmentedBuffer* buffer, char** return_value)
+void getValueFromPutKeyValueBuffer(SizeAwareBuffer* buffer, char** return_value)
 {
     uint32_t value_offset = 12;
     uint32_t key_size;
@@ -95,21 +95,22 @@ void getValueFromPutKeyValueBuffer(AugmentedBuffer* buffer, char** return_value)
     value_offset += key_size;
     value_offset += 4;
 
-    *return_value = (char*)buffer->buffer_pointer + value_offset;
+    *return_value = (char*)buffer->raw_buffer + value_offset;
 }
 
-void calculateKeySizeOffset(AugmentedBuffer* buffer, uint32_t* return_key_size_offset)
+void calculateKeySizeOffset(SizeAwareBuffer* buffer, uint32_t* return_key_size_offset)
 {
+    (void)buffer;
     *return_key_size_offset = MESSAGE_DATA_OFFSET;
 }
 
-void calculateKeyOffset(AugmentedBuffer* buffer, uint32_t* return_key_offset)
+void calculateKeyOffset(SizeAwareBuffer* buffer, uint32_t* return_key_offset)
 {
     calculateKeySizeOffset(buffer, return_key_offset);
     *return_key_offset += MESSAGE_SIZE_FIELD_BYTES;
 }
 
-void calculateValueSizeOffset(AugmentedBuffer* buffer, uint32_t* return_value_size_offset)
+void calculateValueSizeOffset(SizeAwareBuffer* buffer, uint32_t* return_value_size_offset)
 {
     calculateKeyOffset(buffer, return_value_size_offset);
     uint32_t key_size;
@@ -118,28 +119,28 @@ void calculateValueSizeOffset(AugmentedBuffer* buffer, uint32_t* return_value_si
     *return_value_size_offset += key_size;
 }
 
-void calculateValueOffset(AugmentedBuffer* buffer, uint32_t* return_value_offset)
+void calculateValueOffset(SizeAwareBuffer* buffer, uint32_t* return_value_offset)
 {
     calculateValueSizeOffset(buffer, return_value_offset);
     *return_value_offset += MESSAGE_SIZE_FIELD_BYTES;
 }
 
-void allocateMemoryForPutKeyValueMessageRequest(PutKeyValueMessageRequest* message, AugmentedBuffer* buffer)
+void allocateMemoryForPutKeyValueMessageRequest(PutKeyValueMessageRequest* message, SizeAwareBuffer* buffer)
 {
-    message->key = malloc(sizeof(AugmentedBuffer));
-    message->value = malloc(sizeof(AugmentedBuffer));
+    message->key = malloc(sizeof(SizeAwareBuffer));
+    message->value = malloc(sizeof(SizeAwareBuffer));
 
     getKeySizeFromPutKeyValueBuffer(buffer, &message->key->buffer_size);
     getValueSizeFromPutKeyValueBuffer(buffer, &message->value->buffer_size);
 
-    message->key->buffer_pointer = malloc(message->key->buffer_size);
-    message->value->buffer_pointer = malloc(message->value->buffer_size);
+    message->key->raw_buffer = malloc(message->key->buffer_size);
+    message->value->raw_buffer = malloc(message->value->buffer_size);
 }
 
 void destroyMemoryForPutKeyValueMessageRequest(PutKeyValueMessageRequest* message)
 {
-    free(message->key->buffer_pointer);
-    free(message->value->buffer_pointer);
+    free(message->key->raw_buffer);
+    free(message->value->raw_buffer);
 
     free(message->key);
     free(message->value);

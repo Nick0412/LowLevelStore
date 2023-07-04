@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include "MessageTypes.h"
-#include "common/BufferHelper.h"
+#include "common/SizeAwareBuffer.h"
 #include "common/MemoryPool.h"
 
 /**
@@ -13,8 +13,8 @@
  */
 typedef struct PutKeyValueMessageRequest
 {
-    AugmentedBuffer* key;
-    AugmentedBuffer* value;
+    SizeAwareBuffer* key;
+    SizeAwareBuffer* value;
 
 } PutKeyValueMessageRequest;
 
@@ -35,41 +35,41 @@ void calculatePutKeyValueMessageRequestSize(PutKeyValueMessageRequest* message, 
  * @param message 
  * @param return_buffer 
  */
-void serializePutKeyValueMessageRequest(PutKeyValueMessageRequest* message, AugmentedBuffer* return_buffer);
+void serializePutKeyValueMessageRequest(PutKeyValueMessageRequest* message, SizeAwareBuffer* return_buffer);
 
 /**
  * @brief Deserializes the message and puts the result into `return_message`. 
  * 
  * - PutKeyValueMessageRequest (return_message)
- *   - AugmentedBuffer* (key) [needs to be allocated]
- *     - void* (buffer_pointer) [needs to be allocated]
+ *   - SizeAwareBuffer* (key) [needs to be allocated]
+ *     - void* (raw_buffer) [needs to be allocated]
  *     - int (buffer_size) [needs to be allocated, should be set before hand]
- *   - AugmentedBuffer* (value) [needs to be allocated]
- *     - void* (buffer_pointer) [needs to be allocated]
+ *   - SizeAwareBuffer* (value) [needs to be allocated]
+ *     - void* (raw_buffer) [needs to be allocated]
  *     - int (buffer_size) [needs to be allocated, should be set before hand]
  * 
  * @param buffer 
  * @param return_message 
  */
-void deserializePutKeyValueMessageRequest(AugmentedBuffer* buffer, PutKeyValueMessageRequest* return_message);
+void deserializePutKeyValueMessageRequest(SizeAwareBuffer* buffer, PutKeyValueMessageRequest* return_message);
 
-void getKeySizeFromPutKeyValueBuffer(AugmentedBuffer* buffer, uint32_t* return_key_size);
+void getKeySizeFromPutKeyValueBuffer(SizeAwareBuffer* buffer, uint32_t* return_key_size);
 
-void getKeyFromPutKeyValueBuffer(AugmentedBuffer* buffer, char** return_key);
+void getKeyFromPutKeyValueBuffer(SizeAwareBuffer* buffer, char** return_key);
 
-void getValueSizeFromPutKeyValueBuffer(AugmentedBuffer* buffer, uint32_t* return_value_size);
+void getValueSizeFromPutKeyValueBuffer(SizeAwareBuffer* buffer, uint32_t* return_value_size);
 
-void getValueFromPutKeyValueBuffer(AugmentedBuffer* buffer, char** return_value);
+void getValueFromPutKeyValueBuffer(SizeAwareBuffer* buffer, char** return_value);
 
-void calculateKeySizeOffset(AugmentedBuffer* buffer, uint32_t* return_key_size_offset);
+void calculateKeySizeOffset(SizeAwareBuffer* buffer, uint32_t* return_key_size_offset);
 
-void calculateKeyOffset(AugmentedBuffer* buffer, uint32_t* return_key_offset);
+void calculateKeyOffset(SizeAwareBuffer* buffer, uint32_t* return_key_offset);
 
-void calculateValueSizeOffset(AugmentedBuffer* buffer, uint32_t* return_value_size_offset);
+void calculateValueSizeOffset(SizeAwareBuffer* buffer, uint32_t* return_value_size_offset);
 
-void calculateValueOffset(AugmentedBuffer* buffer, uint32_t* return_value_offset);
+void calculateValueOffset(SizeAwareBuffer* buffer, uint32_t* return_value_offset);
 
-void allocateMemoryForPutKeyValueMessageRequest(PutKeyValueMessageRequest* message, AugmentedBuffer* buffer);
+void allocateMemoryForPutKeyValueMessageRequest(PutKeyValueMessageRequest* message, SizeAwareBuffer* buffer);
 
 void destroyMemoryForPutKeyValueMessageRequest(PutKeyValueMessageRequest* message);
 

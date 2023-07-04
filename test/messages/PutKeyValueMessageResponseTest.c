@@ -22,8 +22,8 @@ static void testSerializeDeserialize()
 
     uint32_t response_size;
     calculatePutKeyValueMessageResponseSize(&response, &response_size);
-    AugmentedBuffer buffer = {
-        .buffer_pointer = malloc(response_size),
+    SizeAwareBuffer buffer = {
+        .raw_buffer = malloc(response_size),
         .buffer_size = response_size
     };
 

@@ -1,12 +1,12 @@
 #ifndef KEY_VALUE_ENTITY_H
 #define KEY_VALUE_ENTITY_H
 
-#include "common/BufferHelper.h"
+#include "common/SizeAwareBuffer.h"
 
 typedef struct KeyValueEntity
 {
-    AugmentedBuffer* key;
-    AugmentedBuffer* value;
+    SizeAwareBuffer* key;
+    SizeAwareBuffer* value;
 
 } KeyValueEntity;
 

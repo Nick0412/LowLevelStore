@@ -31,7 +31,7 @@ void addMemoryPoolNode(MemoryPoolList* list, uint32_t memory_block_size, void* m
     }
 }
 
-void allocateMemoryInPool(MemoryPoolList* list, uint32_t memory_block_size, AugmentedBuffer* output_augmented_buffer)
+void allocateMemoryInPool(MemoryPoolList* list, uint32_t memory_block_size, SizeAwareBuffer* output_augmented_buffer)
 {
     // Build linked list node with contents.
     MemoryPoolListNode* new_node = malloc(sizeof(MemoryPoolListNode));
@@ -54,8 +54,8 @@ void allocateMemoryInPool(MemoryPoolList* list, uint32_t memory_block_size, Augm
         list->number_of_nodes++;
     }
 
-    // Build AugmentedBuffer return value.
-    output_augmented_buffer->buffer_pointer = memory_block;
+    // Build SizeAwareBuffer return value.
+    output_augmented_buffer->raw_buffer = memory_block;
     output_augmented_buffer->buffer_size = memory_block_size;
 }
 

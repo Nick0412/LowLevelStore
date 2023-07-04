@@ -43,16 +43,16 @@ void testSingleNodePool()
 void testAllocateMemoryInPool()
 {
     MemoryPoolList pool;
-    AugmentedBuffer buffer;
+    SizeAwareBuffer buffer;
     char* test_string = "1234567890";
 
     initializeMemoryPool(&pool);
     allocateMemoryInPool(&pool, 10, &buffer);
 
-    memcpy(buffer.buffer_pointer, test_string, 10);
+    memcpy(buffer.raw_buffer, test_string, 10);
     
     assert(buffer.buffer_size == 10);
-    assert(strncmp(buffer.buffer_pointer, test_string, 10) == 0);
+    assert(memcmp(buffer.raw_buffer, test_string, 10) == 0);
 
     destroyMemoryPool(&pool);
 }

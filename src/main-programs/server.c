@@ -36,16 +36,16 @@ int main()
         receiveBufferSizeOverSocket(connected_socket, &message_size);
 
 
-        AugmentedBuffer incoming_message = {
-            .buffer_pointer = malloc(message_size),
+        SizeAwareBuffer incoming_message = {
+            .raw_buffer = malloc(message_size),
             .buffer_size = message_size
         };
-        place32BitUintInBuffer(message_size, &incoming_message, MESSAGE_SIZE_OFFSET);
+        SizeAwareBuffer_Place32BitValue(message_size, &incoming_message, MESSAGE_SIZE_OFFSET);
 
         receiveBufferOverSocketWithRetry(connected_socket, &incoming_message, MESSAGE_TYPE_OFFSET, 4);
 
         handleMessage(&incoming_message, &store, connected_socket);
 
-        free(incoming_message.buffer_pointer);
+        free(incoming_message.raw_buffer);
     }
 }

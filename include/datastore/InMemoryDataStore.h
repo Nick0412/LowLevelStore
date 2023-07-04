@@ -27,15 +27,15 @@ void destroyInMemoryDataStore(InMemoryDataStore* store);
  * @brief 
  * 
  * KeyValueEntity
- *   AugmentedBuffer* (key)
+ *   SizeAwareBuffer* (key)
  *     void* (buffer pointer)
  *     uint32_t (size)
- *   AugmentedBuffer* (value)
+ *   SizeAwareBuffer* (value)
  *     void* (buffer pointer)
  *     uint32_t (size)
  * 
  * Every key value we insert into the data store we need to allocate memory as follow
- * 2 AugmentedBuffers for the key and value augmented buffers
+ * 2 SizeAwareBuffers for the key and value augmented buffers
  * 2 void* to hold the key and value strings
  * 
  * @param store 
@@ -52,6 +52,6 @@ void insertKeyValuePair(InMemoryDataStore* store, KeyValueEntity* kv_entity);
  * @param key 
  * @param return_value 
  */
-void findValue(InMemoryDataStore* store, const AugmentedBuffer* key, AugmentedBuffer** return_value);
+void findValue(InMemoryDataStore* store, const SizeAwareBuffer* key, SizeAwareBuffer** return_value);
 
 #endif

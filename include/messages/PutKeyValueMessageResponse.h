@@ -2,7 +2,7 @@
 #define PUT_KEY_VALUE_MESSAGE_RESPONSE_H
 
 #include "MessageStatus.h"
-#include "common/BufferHelper.h"
+#include "common/SizeAwareBuffer.h"
 #include <stdint.h>
 
 /**
@@ -25,8 +25,8 @@ void calculatePutKeyValueMessageResponseSize(PutKeyValueMessageResponse* respons
  * @param response 
  * @param return_serialized_data 
  */
-void serializePutKeyValueMessageResponse(PutKeyValueMessageResponse* response, AugmentedBuffer* return_serialized_data);
+void serializePutKeyValueMessageResponse(PutKeyValueMessageResponse* response, SizeAwareBuffer* return_serialized_data);
 
-void deserializePutKeyValueMessageResponse(AugmentedBuffer* input_buffer, PutKeyValueMessageResponse* return_response);
+void deserializePutKeyValueMessageResponse(SizeAwareBuffer* input_buffer, PutKeyValueMessageResponse* return_response);
 
 #endif

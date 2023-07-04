@@ -2,7 +2,7 @@
 #define MEMORY_POOL_H
 
 #include <stdint.h>
-#include "BufferHelper.h"
+#include "SizeAwareBuffer.h"
 
 /**
  * A memory pool linked list used to hold and store all the memory that is dynamically allocated
@@ -37,7 +37,7 @@ void addMemoryPoolNode(MemoryPoolList* list, uint32_t memory_block_size, void* m
 
 /**
  * @brief This function allocates memory and attaches it to the memory pool list. It will then return an 
- * AugmentedBuffer containing the size of the memory allocated and it's location.
+ * SizeAwareBuffer containing the size of the memory allocated and it's location.
  * 
  * @param list The memory pool list to attach our new memory to.
  * @param memory_block_size How large the memory allocated should be.
@@ -45,7 +45,7 @@ void addMemoryPoolNode(MemoryPoolList* list, uint32_t memory_block_size, void* m
  * 
  * Note: the memory pool node and augmented buffer structs look similar.
  */
-void allocateMemoryInPool(MemoryPoolList* list, uint32_t memory_block_size, AugmentedBuffer* output_augmented_buffer);
+void allocateMemoryInPool(MemoryPoolList* list, uint32_t memory_block_size, SizeAwareBuffer* output_augmented_buffer);
 
 void destroyMemoryPool(MemoryPoolList* list);
 
