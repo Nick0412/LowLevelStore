@@ -1,60 +1,58 @@
 #include "messages/GetValueMessageResponse.h"
+#include "messages/Constants.h"
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 
 void testCalculateGetValueMessageRequestSize()
 {
-    GetValueMessageResponse message = {
-        .value = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"test_value",
-            .buffer_size = 10
+    printf("  - testCalculateGetValueMessageRequestSize\n");
+
+    GetValueMessageResponse res = {
+        .value = {
+            .raw_buffer = (uint8_t*)"testvalue",
+            .buffer_size = 9
         }
     };
 
-    uint32_t size;
-    calculateGetValueMessageResponseSize(&message, &size);
-    
-    assert(size == (4 + 4 + 4 + 10));
+    uint32_t response_size;
+    GetValueMessageResponse_CalculateSize(&res, &response_size);
+
+    assert(response_size == (
+        MESSAGE_SIZE_BYTE_SIZE + MESSAGE_TYPE_BYTE_SIZE +
+        MESSAGE_SIZE_FIELD_BYTES + res.value.buffer_size));
 }
 
-void testSerializeDeserializeGetValueMessageResponse()
+void testSerializeDeserialize()
 {
-    GetValueMessageResponse message = {
-        .value = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"test_value",
-            .buffer_size = 10
+    printf("  - testSerializeDeserialize\n");
+
+    GetValueMessageResponse res = {
+        .value = {
+            .raw_buffer = (uint8_t*)"testvalue",
+            .buffer_size = 9
         }
     };
 
-    uint32_t message_size;
-    calculateGetValueMessageResponseSize(&message, &message_size);
-    SizeAwareBuffer serialized_buffer = {
-        .raw_buffer = malloc(message_size),
-        .buffer_size = message_size
-    };
-    serializeGetValueMessageResponse(&message, &serialized_buffer);
+    SizeAwareBuffer buffer;
+    GetValueMessageResponse_AllocateBuffer(&res, &buffer);
+    GetValueMessageResponse_SerializeIntoBuffer(&res, &buffer);
 
-    GetValueMessageResponse result_message;
-    result_message.value = malloc (sizeof(SizeAwareBuffer));
-    // In the future we may want helper functions to grab the size of these fields from the serialized
-    // buffer.
-    result_message.value->raw_buffer = malloc(10);
-    result_message.value->buffer_size = 10;
-    deserializeGetValueMessageResponse(&serialized_buffer, &result_message);
+    GetValueMessageResponse decoded_res;
+    GetValueMessageResponse_AllocateMessage(&buffer, &decoded_res);
+    GetValueMessageResponse_Deserialize(&buffer, &decoded_res);
 
-    assert(SizeAwareBuffer_AreContentsSame(message.value, result_message.value));
+    assert(SizeAwareBuffer_AreContentsSame(&res.value, &decoded_res.value));
 
-    free(serialized_buffer.raw_buffer);
-    free(result_message.value->raw_buffer);
-    free(result_message.value);    
+    GetValueMessageResponse_DestroyBuffer(&buffer);
+    GetValueMessageResponse_DestroyMessage(&decoded_res);
 }
 
 int main()
 {
-    printf("STARTING GET VALUE VALUE MESSAGE RESPONSE TEST\n");
+    printf("STARTING GET VALUE MESSAGE RESPONSE TEST\n");
 
     testCalculateGetValueMessageRequestSize();
 
-    testSerializeDeserializeGetValueMessageResponse();
+    testSerializeDeserialize();
 }

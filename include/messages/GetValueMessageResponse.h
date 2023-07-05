@@ -7,32 +7,54 @@
 /**
  * Size     | Type      | Value Size  | Value String
  * -------------------------------------------------
- * 4 Bytes  | 4 Bytes   | 4 Bytes   | ?? Bytes
+ * 4 Bytes  | 4 Bytes   | 4 Bytes     | ?? Bytes
  */
 typedef struct GetValueMessageResponse
 {
-    SizeAwareBuffer* value;
+    SizeAwareBuffer value;
 
 } GetValueMessageResponse;
 
-void calculateGetValueMessageResponseSize(GetValueMessageResponse* message, uint32_t* return_size);
-
-void serializeGetValueMessageResponse(GetValueMessageResponse* message, SizeAwareBuffer* return_buffer);
+void GetValueMessageResponse_CalculateSize(const GetValueMessageResponse* response, uint32_t* return_size);
 
 /**
- * @brief Deserializes a byte buffer `buffer` into a get value message response `return_message`.
- * 
- * This function expects `return_message` to be properly allocated and the size of the buffer to be set
- * before hand.
- * 
- * - GetValueMessageResponse (return_message)
- *   - SizeAwareBuffer* (buffer) [needs to be allocated]
- *     - void* (raw_buffer) [needs to be allocated]
- *     - uint32_t (buffer_size) [needs to be allocated and set to the expected size]
- * 
- * @param buffer 
- * @param return_message 
+ * Precondition: 
+ *   - `return_message_bytes` must be allocated to hold the response
  */
-void deserializeGetValueMessageResponse(SizeAwareBuffer* buffer, GetValueMessageResponse* return_message);
+void GetValueMessageResponse_SerializeIntoBuffer(const GetValueMessageResponse* response, SizeAwareBuffer* return_message_bytes);
+
+/**
+ * Precondition:
+ *   - `return_response` must be allocated to hold the deserialized message bytes
+*/
+void GetValueMessageResponse_Deserialize(const SizeAwareBuffer* message_bytes, GetValueMessageResponse* return_response);
+
+/**
+ * Postcondition:
+ *   - `return_message_bytes` is allocated and must be cleaned up
+*/
+void GetValueMessageResponse_AllocateBuffer(const GetValueMessageResponse* response, SizeAwareBuffer* return_message_bytes);
+
+void GetValueMessageResponse_DestroyBuffer(SizeAwareBuffer* message_bytes);
+
+/**
+ * Postcondition:
+ *   - `return_response` is allocated and must be cleaned up
+*/
+void GetValueMessageResponse_AllocateMessage(const SizeAwareBuffer* message_bytes, GetValueMessageResponse* return_response);
+
+void GetValueMessageResponse_DestroyMessage(GetValueMessageResponse* response);
+
+void GetValueMessageResponse_GetValueSizeOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_value_size_offset);
+
+void GetValueMessageResponse_GetValueSize(const SizeAwareBuffer* message_bytes, uint32_t* return_value_size);
+
+void GetValueMessageResponse_GetValueOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_value_offset);
+
+/**
+ * Precondition:
+ *   - `return_value` must be allocated to hold the value
+*/
+void GetValueMessageResponse_GetValue(const SizeAwareBuffer* message_bytes, SizeAwareBuffer* return_value);
 
 #endif

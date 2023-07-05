@@ -55,7 +55,7 @@ void testSerializeDeserialize()
 
 int main()
 {
-    printf("STARTING GET VALUE VALUE MESSAGE REQUEST TEST\n");
+    printf("STARTING GET VALUE MESSAGE REQUEST TEST\n");
 
     testCalculateGetValueMessageRequestSize();
 

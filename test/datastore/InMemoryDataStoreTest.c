@@ -5,6 +5,8 @@
 
 void testInitializeInMemoryDataStore()
 {
+    printf("  - testInitializeInMemoryDataStore\n");
+
     InMemoryDataStore store;
     initializeInMemoryDataStore(&store);
 
@@ -13,6 +15,8 @@ void testInitializeInMemoryDataStore()
 
 void testKeyValueInsertion()
 {
+    printf("  - testKeyValueInsertion\n");
+
     InMemoryDataStore data_store;
     initializeInMemoryDataStore(&data_store);
 

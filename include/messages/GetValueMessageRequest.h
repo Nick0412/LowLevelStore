@@ -61,7 +61,7 @@ void GetValueMessageRequest_GetKeyOffset(const SizeAwareBuffer* message_bytes, u
 
 /**
  * Precondition:
- *   - `return_key` must be allocated to hold the key size
+ *   - `return_key` must be allocated to hold the key
 */
 void GetValueMessageRequest_GetKey(const SizeAwareBuffer* message_bytes, SizeAwareBuffer* return_key);
 
