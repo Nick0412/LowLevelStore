@@ -13,64 +13,63 @@
  */
 typedef struct PutKeyValueMessageRequest
 {
-    SizeAwareBuffer* key;
-    SizeAwareBuffer* value;
+    SizeAwareBuffer key;
+    SizeAwareBuffer value;
 
 } PutKeyValueMessageRequest;
 
-/**
- * @brief Calculates the size of a PutKeyValueMessageRequest message and stores the result
- * in return_size.
- * 
- * @param message The message to calculate the size of. Assumes this message is populated and
- * has been allocated.
- * @param return_size The resulting size of the message. 
- */
-void calculatePutKeyValueMessageRequestSize(PutKeyValueMessageRequest* message, uint32_t* return_size);
+void PutKeyValueMessageRequest_CalculateSize(const PutKeyValueMessageRequest* request, uint32_t* return_request_size);
 
 /**
- * @brief Serialized the PutKeyValueMessageRequest and puts the result into the return_buffer. Assumes
- * the return_buffer has been properly allocated and the size is set.
- * 
- * @param message 
- * @param return_buffer 
- */
-void serializePutKeyValueMessageRequest(PutKeyValueMessageRequest* message, SizeAwareBuffer* return_buffer);
+ * Precondition:
+ *   - `return_message_bytes` must be allocated to hold the request
+*/
+void PutKeyValueMessageRequest_SerializeIntoBuffer(const PutKeyValueMessageRequest* request, SizeAwareBuffer* return_message_bytes);
 
 /**
- * @brief Deserializes the message and puts the result into `return_message`. 
- * 
- * - PutKeyValueMessageRequest (return_message)
- *   - SizeAwareBuffer* (key) [needs to be allocated]
- *     - void* (raw_buffer) [needs to be allocated]
- *     - int (buffer_size) [needs to be allocated, should be set before hand]
- *   - SizeAwareBuffer* (value) [needs to be allocated]
- *     - void* (raw_buffer) [needs to be allocated]
- *     - int (buffer_size) [needs to be allocated, should be set before hand]
- * 
- * @param buffer 
- * @param return_message 
- */
-void deserializePutKeyValueMessageRequest(SizeAwareBuffer* buffer, PutKeyValueMessageRequest* return_message);
+ * Precondition:
+ *   - `return_request` must be allocated to hold the deserialized bytes
+*/
+void PutKeyValueMessageRequest_Deserialize(const SizeAwareBuffer* message_bytes, PutKeyValueMessageRequest* return_request);
 
-void getKeySizeFromPutKeyValueBuffer(SizeAwareBuffer* buffer, uint32_t* return_key_size);
+/**
+ * Postcondition:
+ *   - `return_message_bytes` has been allocated must be cleaned up
+*/
+void PutKeyValueMessageRequest_AllocateBuffer(const PutKeyValueMessageRequest* request, SizeAwareBuffer* return_message_bytes);
 
-void getKeyFromPutKeyValueBuffer(SizeAwareBuffer* buffer, char** return_key);
+void PutKeyValueMessageRequest_DestroyBuffer(SizeAwareBuffer* message_bytes);
 
-void getValueSizeFromPutKeyValueBuffer(SizeAwareBuffer* buffer, uint32_t* return_value_size);
+/**
+ * Postcondition:
+ *   - `return_request` has been allocated must be cleaned up
+*/
+void PutKeyValueMessageRequest_AllocateMessage(const SizeAwareBuffer* message_bytes, PutKeyValueMessageRequest* return_request);
 
-void getValueFromPutKeyValueBuffer(SizeAwareBuffer* buffer, char** return_value);
+void PutKeyValueMessageRequest_DestroyMessage(PutKeyValueMessageRequest* request);
 
-void calculateKeySizeOffset(SizeAwareBuffer* buffer, uint32_t* return_key_size_offset);
+void PutKeyValueMessageRequest_GetKeySizeOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_key_size_offset);
 
-void calculateKeyOffset(SizeAwareBuffer* buffer, uint32_t* return_key_offset);
+void PutKeyValueMessageRequest_GetKeySize(const SizeAwareBuffer* message_bytes, uint32_t* return_key_size);
 
-void calculateValueSizeOffset(SizeAwareBuffer* buffer, uint32_t* return_value_size_offset);
+void PutKeyValueMessageRequest_GetKeyOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_key_offset);
 
-void calculateValueOffset(SizeAwareBuffer* buffer, uint32_t* return_value_offset);
+/**
+ * Precondition:
+ *   - `return_key` needs to be allocated to hold the key
+*/
+void PutKeyValueMessageRequest_GetKey(const SizeAwareBuffer* message_bytes, SizeAwareBuffer* return_key);
 
-void allocateMemoryForPutKeyValueMessageRequest(PutKeyValueMessageRequest* message, SizeAwareBuffer* buffer);
+void PutKeyValueMessageRequest_GetValueSizeOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_value_size_offset);
 
-void destroyMemoryForPutKeyValueMessageRequest(PutKeyValueMessageRequest* message);
+void PutKeyValueMessageRequest_GetValueSize(const SizeAwareBuffer* message_bytes, uint32_t* return_value_size);
+
+void PutKeyValueMessageRequest_GetValueOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_value_offset);
+
+/**
+ * Precondition:
+ *   - `return_value` needs to be allocated to hold the value
+*/
+void PutKeyValueMessageRequest_GetValue(const SizeAwareBuffer* message_bytes, SizeAwareBuffer* return_value);
 
 #endif
