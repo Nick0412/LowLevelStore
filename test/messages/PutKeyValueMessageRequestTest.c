@@ -1,201 +1,111 @@
 #include "messages/PutKeyValueMessageRequest.h"
+#include "messages/Constants.h"
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
-void testCalculatePutKeyMessageRequestSize()
+static void testSize()
 {
-    PutKeyValueMessageRequest message = {
-        .key = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"test_key",
+    printf("  - testSize\n");
+
+    PutKeyValueMessageRequest req = {
+        .key = {
+            .raw_buffer = (uint8_t*)"test-key",
             .buffer_size = 8
         },
-        .value = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"test_value",
+        .value = {
+            .raw_buffer = (uint8_t*)"test-value",
             .buffer_size = 10
         }
     };
 
     uint32_t size;
-    calculatePutKeyValueMessageRequestSize(&message, &size);
-    
-    assert(size == (4 + 4 + 4 + 8 + 4 + 10));
+    PutKeyValueMessageRequest_CalculateSize(&req, &size);
+
+    assert(size == (
+        MESSAGE_SIZE_BYTE_SIZE + MESSAGE_TYPE_BYTE_SIZE +
+        MESSAGE_SIZE_FIELD_BYTES + req.key.buffer_size +
+        MESSAGE_SIZE_FIELD_BYTES + req.value.buffer_size));
 }
 
-void testSerializeDeserializePutKeyValueMessageRequest()
+static void testSerailizedOffsets()
 {
-    PutKeyValueMessageRequest message = {
-        .key = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"test_key",
+    printf("  - testSerailizedOffsets\n");
+
+    PutKeyValueMessageRequest req = {
+        .key = {
+            .raw_buffer = (uint8_t*)"test-key",
             .buffer_size = 8
         },
-        .value = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"test_value",
+        .value = {
+            .raw_buffer = (uint8_t*)"test-value",
             .buffer_size = 10
         }
     };
 
-    // Serialize
-    uint32_t message_size;
-    calculatePutKeyValueMessageRequestSize(&message, &message_size);
-    SizeAwareBuffer serialized_buffer = {
-        .raw_buffer = malloc(message_size),
-        .buffer_size = message_size
-    };
-    serializePutKeyValueMessageRequest(&message, &serialized_buffer);
+    uint32_t size;
+    PutKeyValueMessageRequest_CalculateSize(&req, &size);
 
-    // Deserialize
-    PutKeyValueMessageRequest result_message;
-    result_message.key = malloc(sizeof(SizeAwareBuffer));
-    result_message.key->raw_buffer = malloc(8);
-    result_message.key->buffer_size = 8;
-    result_message.value = malloc(sizeof(SizeAwareBuffer));
-    result_message.value->raw_buffer = malloc(10);
-    result_message.value->buffer_size = 10;
-    deserializePutKeyValueMessageRequest(&serialized_buffer, &result_message);
-
-    // Test
-    assert(SizeAwareBuffer_AreContentsSame(result_message.key, message.key));
-    assert(SizeAwareBuffer_AreContentsSame(result_message.value, message.value));
-
-    // Cleanup
-    free(serialized_buffer.raw_buffer);
-    free(result_message.key->raw_buffer);
-    free(result_message.key);
-    free(result_message.value->raw_buffer);
-    free(result_message.value);
-}
-
-void testGetKeyAndGetKeySize()
-{
-    PutKeyValueMessageRequest message = {
-        .key = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"key1",
-            .buffer_size = 4
-        },
-        .value = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"value1",
-            .buffer_size = 6
-        }
-    };
-
-    // Serialize
-    uint32_t message_size;
-    calculatePutKeyValueMessageRequestSize(&message, &message_size);
-    SizeAwareBuffer serialized_buffer = {
-        .raw_buffer = malloc(message_size),
-        .buffer_size = message_size
-    };
-    serializePutKeyValueMessageRequest(&message, &serialized_buffer);
-
-    // Get key size
-    uint32_t key_size_actual;
-    getKeySizeFromPutKeyValueBuffer(&serialized_buffer, &key_size_actual);
-
-    // Get key
-    char* string_pointer_actual;
-    getKeyFromPutKeyValueBuffer(&serialized_buffer, &string_pointer_actual);
-
-    // Test
-    assert(key_size_actual == 4);
-    assert(memcmp(string_pointer_actual, "key1", 4) == 0);
-
-    // Cleanup
-    free(serialized_buffer.raw_buffer);
-}
-
-void testGetValueAndGetValueSize()
-{
-    PutKeyValueMessageRequest message = {
-        .key = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"key1",
-            .buffer_size = 4
-        },
-        .value = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"value1",
-            .buffer_size = 6
-        }
-    };
-
-    // Serialize
-    uint32_t message_size;
-    calculatePutKeyValueMessageRequestSize(&message, &message_size);
-    SizeAwareBuffer serialized_buffer = {
-        .raw_buffer = malloc(message_size),
-        .buffer_size = message_size
-    };
-    serializePutKeyValueMessageRequest(&message, &serialized_buffer);
-
-    // Get value size
-    uint32_t value_size_actual;
-    getValueSizeFromPutKeyValueBuffer(&serialized_buffer, &value_size_actual);
-
-    // Get value
-    char* value_actual;
-    getValueFromPutKeyValueBuffer(&serialized_buffer, &value_actual);
-
-    // Test
-    assert(value_size_actual == 6);
-    assert(memcmp(value_actual, "value1", 6) == 0);
-
-    // Cleanup
-    free(serialized_buffer.raw_buffer);
-}
-
-void testOffsetCalculationsPutKeyValueMessage()
-{
-    PutKeyValueMessageRequest message = {
-        .key = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"abcde",
-            .buffer_size = 5
-        },
-        .value = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"testing123",
-            .buffer_size = 10
-        }
-    };
-
-    // Serialize data
-    uint32_t message_size;
-    calculatePutKeyValueMessageRequestSize(&message, &message_size);
-    SizeAwareBuffer serialized_buffer = {
-        .raw_buffer = malloc(message_size),
-        .buffer_size = message_size
-    };
-    serializePutKeyValueMessageRequest(&message, &serialized_buffer);
-
+    SizeAwareBuffer buffer;
+    PutKeyValueMessageRequest_AllocateBuffer(&req, &buffer);
+    PutKeyValueMessageRequest_SerializeIntoBuffer(&req, &buffer);
+    
     uint32_t key_size_offset;
-    calculateKeySizeOffset(&serialized_buffer, &key_size_offset);
-
-    uint32_t key_offset;
-    calculateKeyOffset(&serialized_buffer, &key_offset);
-
+    uint32_t key_size;
     uint32_t value_size_offset;
-    calculateValueSizeOffset(&serialized_buffer, &value_size_offset);
+    uint32_t value_size;
+    PutKeyValueMessageRequest_GetKeySizeOffset(&buffer, &key_size_offset);
+    PutKeyValueMessageRequest_GetKeySize(&buffer, &key_size);
+    PutKeyValueMessageRequest_GetValueSizeOffset(&buffer, &value_size_offset);
+    PutKeyValueMessageRequest_GetValueSize(&buffer, &value_size);
 
-    uint32_t value_offset;
-    calculateValueOffset(&serialized_buffer, &value_offset);
+    assert(size == buffer.buffer_size);
+    assert(key_size_offset == MESSAGE_DATA_OFFSET);
+    assert(key_size == 8);
+    assert(value_size_offset == (MESSAGE_DATA_OFFSET + MESSAGE_SIZE_FIELD_BYTES + key_size));
+    assert(value_size == 10);
 
-    assert(key_size_offset == 8);
-    assert(key_offset == 12);
-    assert(value_size_offset == 17);
-    assert(value_offset == 21);
+    PutKeyValueMessageRequest_DestroyBuffer(&buffer);
+}
 
-    free(serialized_buffer.raw_buffer);
+static void testSerializeDeserialize()
+{
+    printf("  - testSerializeDeserialize\n");
+
+    PutKeyValueMessageRequest req = {
+        .key = {
+            .raw_buffer = (uint8_t*)"test-key",
+            .buffer_size = 8
+        },
+        .value = {
+            .raw_buffer = (uint8_t*)"test-value",
+            .buffer_size = 10
+        }
+    };
+
+    SizeAwareBuffer serialized_message;
+    PutKeyValueMessageRequest_AllocateBuffer(&req, &serialized_message);
+    PutKeyValueMessageRequest_SerializeIntoBuffer(&req, &serialized_message);
+
+    PutKeyValueMessageRequest result;
+    PutKeyValueMessageRequest_AllocateMessage(&serialized_message, &result);
+    PutKeyValueMessageRequest_Deserialize(&serialized_message, &result);
+
+    assert(SizeAwareBuffer_AreContentsSame(&req.key, &result.key));
+    assert(SizeAwareBuffer_AreContentsSame(&req.value, &result.value));
+
+    PutKeyValueMessageRequest_DestroyBuffer(&serialized_message);
+    PutKeyValueMessageRequest_DestroyMessage(&result);
 }
 
 int main()
 {
     printf("STARTING PUT KEY VALUE MESSAGE REQUEST TEST\n");
 
-    testCalculatePutKeyMessageRequestSize();
+    testSize();
 
-    testSerializeDeserializePutKeyValueMessageRequest();
+    testSerailizedOffsets();
 
-    testGetKeyAndGetKeySize();
-
-    testGetValueAndGetValueSize();
-
-    testOffsetCalculationsPutKeyValueMessage();
+    testSerializeDeserialize();
 }
