@@ -11,6 +11,7 @@
  */
 typedef struct GetValueMessageResponse
 {
+    // TODO: Add response status here for the client to check.
     SizeAwareBuffer value;
 
 } GetValueMessageResponse;

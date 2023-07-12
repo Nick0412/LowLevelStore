@@ -44,7 +44,7 @@ Error CreateSampleError()
 
 void verifySampleError()
 {
-    printf("  - verifySampleError");
+    printf("  - verifySampleError\n");
 
     Error err = CreateSampleError();
     SizeAwareBuffer* msg = Error_DescribeError(&err);

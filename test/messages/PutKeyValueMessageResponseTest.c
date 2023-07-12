@@ -1,44 +1,52 @@
 #include "messages/PutKeyValueMessageResponse.h"
 #include "messages/MessageStatus.h"
-
+#include "messages/Constants.h"
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 
-static void testMessageSize()
+static void testCalculateSize()
 {
-    PutKeyValueMessageResponse response;
-    uint32_t size;
-    calculatePutKeyValueMessageResponseSize(&response, &size);
+    printf("  - testCalculateSize\n");
 
-    assert(size == 12);
+    PutKeyValueMessageResponse res = {
+        .status = MESSAGE_SUCCESS
+    };
+
+    uint32_t message_size;
+    PutKeyValueMessageResponse_CalculateSize(&res, &message_size);
+
+    assert(message_size == (
+        MESSAGE_SIZE_BYTE_SIZE + MESSAGE_TYPE_BYTE_SIZE + MESSAGE_SIZE_FIELD_BYTES));
 }
 
 static void testSerializeDeserialize()
 {
-    PutKeyValueMessageResponse response = {
-        .status = MESSAGE_SUCCESS
+    printf("  - testSerializeDeserialize\n");
+
+    PutKeyValueMessageResponse res = {
+        .status = MESSAGE_FAILURE
     };
 
-    uint32_t response_size;
-    calculatePutKeyValueMessageResponseSize(&response, &response_size);
-    SizeAwareBuffer buffer = {
-        .raw_buffer = malloc(response_size),
-        .buffer_size = response_size
-    };
+    SizeAwareBuffer buffer;
+    PutKeyValueMessageResponse_AllocateBuffer(&res, &buffer);
+    PutKeyValueMessageResponse_SerializeIntoBuffer(&res, &buffer);
 
-    serializePutKeyValueMessageResponse(&response, &buffer);
-    PutKeyValueMessageResponse deserialized;
-    deserializePutKeyValueMessageResponse(&buffer, &deserialized);
+    PutKeyValueMessageResponse actual;
+    PutKeyValueMessageResponse_AllocateMessage(&buffer, &res);
+    PutKeyValueMessageResponse_Deserialize(&buffer, &actual);
 
-    assert(deserialized.status == MESSAGE_SUCCESS);
+    assert(actual.status == MESSAGE_FAILURE);
+
+    PutKeyValueMessageResponse_DestroyBuffer(&buffer);
+    PutKeyValueMessageResponse_DestroyMessage(&actual);
 }
 
 int main()
 {
     printf("STARTING PUT KEY VALUE MESSAGE RESPONSE TEST\n");
 
-    testMessageSize();
+    testCalculateSize();
 
     testSerializeDeserialize();
 }
