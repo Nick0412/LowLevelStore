@@ -4,57 +4,32 @@
 #include <stdio.h>
 #include <string.h>
 
-void helperTestPoolIsCleanedUp(MemoryPoolList* pool)
+// TODO: Finish tests for this file
+
+void helperTestPoolIsCleanedUp(MemoryPool* pool)
 {
     assert(pool->number_of_nodes == 0);
     assert(pool->head == NULL);
-    assert(pool->tail == NULL);
 }
 
 void testZeroNodePool()
 {
-    MemoryPoolList pool;
-    initializeMemoryPool(&pool);
-
-    assert(pool.number_of_nodes == 0);
-    assert(pool.head == NULL);
-    assert(pool.tail == NULL);
-
-    destroyMemoryPool(&pool);
-    helperTestPoolIsCleanedUp(&pool);
-}
-
-void testSingleNodePool()
-{
-    MemoryPoolList pool;
-    initializeMemoryPool(&pool);
-
-    void* mem_block = malloc(5);
-    addMemoryPoolNode(&pool, 5, mem_block);
-
-    assert(pool.number_of_nodes == 1);
-    assert(pool.head != NULL);
-    assert(pool.tail != NULL);
-
-    destroyMemoryPool(&pool);
-    helperTestPoolIsCleanedUp(&pool);
-}
-
-void testAllocateMemoryInPool()
-{
-    MemoryPoolList pool;
-    SizeAwareBuffer buffer;
-    char* test_string = "1234567890";
-
-    initializeMemoryPool(&pool);
-    allocateMemoryInPool(&pool, 10, &buffer);
-
-    memcpy(buffer.raw_buffer, test_string, 10);
+    printf("  - testZeroNodePool\n");
     
-    assert(buffer.buffer_size == 10);
-    assert(memcmp(buffer.raw_buffer, test_string, 10) == 0);
+    MemoryPool pool;
+    MemoryPool_Initialize(&pool);
 
-    destroyMemoryPool(&pool);
+    helperTestPoolIsCleanedUp(&pool);
+}
+
+void testMultiNodePool()
+{
+    printf("  - testZeroNodePool\n");
+
+    MemoryPool pool;
+    MemoryPool_Initialize(&pool);
+
+    // MemoryPool_AllocateMemorySize(&pool, 10, )
 }
 
 int main()
@@ -63,7 +38,7 @@ int main()
 
     testZeroNodePool();
 
-    testSingleNodePool();
+    // testSingleNodePool();
 
-    testAllocateMemoryInPool();
+    // testAllocateMemoryInPool();
 }

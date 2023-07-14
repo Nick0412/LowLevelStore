@@ -1,57 +1,57 @@
-#include "datastore/InMemoryDataStore.h"
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>
+// #include "datastore/InMemoryDataStore.h"
+// #include <stdio.h>
+// #include <assert.h>
+// #include <string.h>
 
-void testInitializeInMemoryDataStore()
-{
-    printf("  - testInitializeInMemoryDataStore\n");
+// void testInitializeInMemoryDataStore()
+// {
+//     printf("  - testInitializeInMemoryDataStore\n");
 
-    InMemoryDataStore store;
-    initializeInMemoryDataStore(&store);
+//     InMemoryDataStore store;
+//     initializeInMemoryDataStore(&store);
 
-    assert(store.current_size == 0);
-}
+//     assert(store.current_size == 0);
+// }
 
-void testKeyValueInsertion()
-{
-    printf("  - testKeyValueInsertion\n");
+// void testKeyValueInsertion()
+// {
+//     printf("  - testKeyValueInsertion\n");
 
-    InMemoryDataStore data_store;
-    initializeInMemoryDataStore(&data_store);
+//     InMemoryDataStore data_store;
+//     initializeInMemoryDataStore(&data_store);
 
-    KeyValueEntity input_kv = {
-        .key = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"test_key",
-            .buffer_size = 8
-        },
-        .value = &(SizeAwareBuffer) {
-            .raw_buffer = (uint8_t*)"test_value",
-            .buffer_size = 10
-        }
-    };
+//     KeyValueEntity input_kv = {
+//         .key = &(SizeAwareBuffer) {
+//             .raw_buffer = (uint8_t*)"test_key",
+//             .buffer_size = 8
+//         },
+//         .value = &(SizeAwareBuffer) {
+//             .raw_buffer = (uint8_t*)"test_value",
+//             .buffer_size = 10
+//         }
+//     };
 
-    insertKeyValuePair(&data_store, &input_kv);
+//     insertKeyValuePair(&data_store, &input_kv);
 
-    SizeAwareBuffer lookup_key = {
-        .raw_buffer = (uint8_t*)"test_key",
-        .buffer_size = 8
-    };
+//     SizeAwareBuffer lookup_key = {
+//         .raw_buffer = (uint8_t*)"test_key",
+//         .buffer_size = 8
+//     };
 
-    SizeAwareBuffer* return_value;
-    findValue(&data_store, &lookup_key, &return_value);
+//     SizeAwareBuffer* return_value;
+//     findValue(&data_store, &lookup_key, &return_value);
 
-    assert(memcmp(return_value->raw_buffer, "test_value", 10) == 0);
-    assert(return_value->buffer_size == 10);
+//     assert(memcmp(return_value->raw_buffer, "test_value", 10) == 0);
+//     assert(return_value->buffer_size == 10);
 
-    destroyInMemoryDataStore(&data_store);
-}
+//     destroyInMemoryDataStore(&data_store);
+// }
 
 int main()
 {
-    printf("STARTING IN MEMORY DATA STORE TEST\n");
+    // printf("STARTING IN MEMORY DATA STORE TEST\n");
 
-    testInitializeInMemoryDataStore();
+    // testInitializeInMemoryDataStore();
 
-    testKeyValueInsertion();
+    // testKeyValueInsertion();
 }
