@@ -29,7 +29,7 @@ void MemoryPool_Initialize(MemoryPool* pool);
  * The allocated memory is in a node that gets associated with the pool. Thee returned buffer's raw_buffer points
  * directly to the memory pool.
 */
-void MemoryPool_AllocateMemorySize(MemoryPool* pool, uint32_t number_of_bytes_to_allocate, SizeAwareBuffer* return_buffer);
+void MemoryPool_AllocateMemorySize(MemoryPool* pool, uint32_t number_of_bytes_to_allocate, SizeAwareBuffer** return_buffer);
 
 void MemoryPool_DestroyPool(MemoryPool* pool);
 

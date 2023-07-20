@@ -24,12 +24,23 @@ void testZeroNodePool()
 
 void testMultiNodePool()
 {
-    printf("  - testZeroNodePool\n");
+    printf("  - testMultiNodePool\n");
 
     MemoryPool pool;
+    SizeAwareBuffer* buffer_pointer;
+    SizeAwareBuffer* buffer_pointer_2;
     MemoryPool_Initialize(&pool);
+    MemoryPool_AllocateMemorySize(&pool, 10, &buffer_pointer);
+    MemoryPool_AllocateMemorySize(&pool, 20, &buffer_pointer_2);
+    buffer_pointer_2->raw_buffer[2] = 0xAB;
 
-    // MemoryPool_AllocateMemorySize(&pool, 10, )
+    assert(pool.number_of_nodes == 2);
+    assert(SizeAwareBuffer_AreContentsSame(&pool.head->next->data, buffer_pointer));
+    assert(SizeAwareBuffer_AreContentsSame(&pool.head->data, buffer_pointer_2));
+    assert(pool.head->data.raw_buffer[2] == 0xAB);
+
+    MemoryPool_DestroyPool(&pool);
+    helperTestPoolIsCleanedUp(&pool);
 }
 
 int main()
@@ -38,7 +49,5 @@ int main()
 
     testZeroNodePool();
 
-    // testSingleNodePool();
-
-    // testAllocateMemoryInPool();
+    testMultiNodePool();
 }
