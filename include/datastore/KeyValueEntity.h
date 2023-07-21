@@ -5,8 +5,8 @@
 
 typedef struct KeyValueEntity
 {
-    SizeAwareBuffer* key;
-    SizeAwareBuffer* value;
+    SizeAwareBuffer key;
+    SizeAwareBuffer value;
 
 } KeyValueEntity;
 
