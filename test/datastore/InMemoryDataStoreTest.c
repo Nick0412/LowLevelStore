@@ -1,57 +1,124 @@
-// #include "datastore/InMemoryDataStore.h"
-// #include <stdio.h>
-// #include <assert.h>
-// #include <string.h>
+#include "datastore/InMemoryDataStore.h"
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
 
-// void testInitializeInMemoryDataStore()
-// {
-//     printf("  - testInitializeInMemoryDataStore\n");
+void testStoreInitialization()
+{
+    printf("  - testStoreInitialization\n");
 
-//     InMemoryDataStore store;
-//     initializeInMemoryDataStore(&store);
+    InMemoryDataStore store;
+    InMemoryDataStore_Initialize(&store);
 
-//     assert(store.current_size == 0);
-// }
+    assert(store.current_size == 0);
+    
+    InMemoryDataStore_Destroy(&store);
+}
 
-// void testKeyValueInsertion()
-// {
-//     printf("  - testKeyValueInsertion\n");
+void findValueDoesNotExist()
+{
+    printf("  - findValueDoesNotExist\n");
 
-//     InMemoryDataStore data_store;
-//     initializeInMemoryDataStore(&data_store);
+    // Setup
+    InMemoryDataStore store;
+    SizeAwareBuffer key = {
+        .buffer_size = 5,
+        .raw_buffer = (uint8_t*)"hello"
+    };
+    SizeAwareBuffer* temp_return;
+    InMemoryDataStore_Initialize(&store);
 
-//     KeyValueEntity input_kv = {
-//         .key = &(SizeAwareBuffer) {
-//             .raw_buffer = (uint8_t*)"test_key",
-//             .buffer_size = 8
-//         },
-//         .value = &(SizeAwareBuffer) {
-//             .raw_buffer = (uint8_t*)"test_value",
-//             .buffer_size = 10
-//         }
-//     };
+    // Act
+    Status status = InMemoryDataStore_FindValue(&store, &key, &temp_return);
 
-//     insertKeyValuePair(&data_store, &input_kv);
+    // Verify
+    char* expected_message = "Can not find key in data store. Key: hello";
+    SizeAwareBuffer expected_buffer = {
+        .buffer_size = strlen(expected_message),
+        .raw_buffer = (uint8_t*)expected_message
+    };
+    assert(!Status_IsSuccessful(&status));
+    assert(SizeAwareBuffer_AreContentsSame(&expected_buffer, Status_GetError(&status)));
 
-//     SizeAwareBuffer lookup_key = {
-//         .raw_buffer = (uint8_t*)"test_key",
-//         .buffer_size = 8
-//     };
+    // Cleanup
+    Status_CleanUpResources(&status);
+    InMemoryDataStore_Destroy(&store);
+}
 
-//     SizeAwareBuffer* return_value;
-//     findValue(&data_store, &lookup_key, &return_value);
+void insertValueAndFind()
+{
+    printf("  - insertValueAndFind\n");
 
-//     assert(memcmp(return_value->raw_buffer, "test_value", 10) == 0);
-//     assert(return_value->buffer_size == 10);
+    // Setup
+    InMemoryDataStore store;
+    InMemoryDataStore_Initialize(&store);
+    SizeAwareBuffer key = {
+        .raw_buffer = (uint8_t*)"test-key",
+        .buffer_size = 8
+    };
+    SizeAwareBuffer value = {
+        .raw_buffer = (uint8_t*)"test-value",
+        .buffer_size = 10
+    };
+    KeyValueEntity kv = {
+        .key = key,
+        .value = value
+    };
 
-//     destroyInMemoryDataStore(&data_store);
-// }
+    // Act
+    InMemoryDataStore_InsertKeyValuePair(&store, &kv);
+
+    // Verify
+    SizeAwareBuffer* result_ptr;
+    Status status = InMemoryDataStore_FindValue(&store, &key, &result_ptr);
+    assert(Status_IsSuccessful(&status));
+    assert(SizeAwareBuffer_AreContentsSame(&value, result_ptr));
+
+    // Cleanup
+    InMemoryDataStore_Destroy(&store);
+}
+
+void insertKeyTwiceError()
+{
+    printf("  - insertKeyTwiceError\n");
+
+    // Setup
+    InMemoryDataStore store;
+    InMemoryDataStore_Initialize(&store);
+    SizeAwareBuffer key = { .raw_buffer = (uint8_t*)"test-key", .buffer_size = 8 };
+    SizeAwareBuffer value = { .raw_buffer = (uint8_t*)"test-value", .buffer_size = 10 };
+    SizeAwareBuffer value2 = { .raw_buffer = (uint8_t*)"blabla", .buffer_size = 6 };
+    KeyValueEntity kv = { .key = key, .value = value };
+    KeyValueEntity kv2 = { .key = key, .value = value2 };
+
+    char* expected_message = "The key already exists inside the data store. Key: test-key";
+    SizeAwareBuffer expected = { 
+        .buffer_size = strlen(expected_message),
+        .raw_buffer = (uint8_t*)expected_message
+    };
+    
+    // Act
+    InMemoryDataStore_InsertKeyValuePair(&store, &kv);
+    Status status = InMemoryDataStore_InsertKeyValuePair(&store, &kv2);
+
+    // Verify
+    assert(!Status_IsSuccessful(&status));
+    assert(SizeAwareBuffer_AreContentsSame(&expected, Status_GetError(&status)));
+
+    // Cleanup
+    Status_CleanUpResources(&status);
+    InMemoryDataStore_Destroy(&store);
+}
 
 int main()
 {
-    // printf("STARTING IN MEMORY DATA STORE TEST\n");
+    printf("STARTING IN MEMORY DATA STORE TEST\n");
 
-    // testInitializeInMemoryDataStore();
+    testStoreInitialization();
 
-    // testKeyValueInsertion();
+    findValueDoesNotExist();
+
+    insertValueAndFind();
+
+    insertKeyTwiceError();
 }

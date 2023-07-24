@@ -24,8 +24,11 @@ bool SizeAwareBuffer_AreContentsSame(const SizeAwareBuffer* buffer_1, const Size
            (memcmp(buffer_1->raw_buffer, buffer_2->raw_buffer, buffer_1->buffer_size) == 0);
 }
 
-void SizeAwareBuffer_CopyBufferIntoOtherBuffer(const SizeAwareBuffer* source_buffer, uint32_t offset_into_source,
-    uint32_t number_of_bytes, SizeAwareBuffer* destination_buffer, uint32_t offset_into_destination)
+void SizeAwareBuffer_CopyBufferIntoOtherBuffer(const SizeAwareBuffer* source_buffer,
+    uint32_t offset_into_source,
+    uint32_t number_of_bytes,
+    SizeAwareBuffer* destination_buffer,
+    uint32_t offset_into_destination)
 {
     if (offset_into_source > source_buffer->buffer_size ||
         offset_into_source + number_of_bytes > source_buffer->buffer_size)
