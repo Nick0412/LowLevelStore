@@ -1,4 +1,4 @@
-#include "common/Result.h"
+#include "common/Status.h"
 #include "common/SizeAwareBuffer.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,14 +22,14 @@ SizeAwareBuffer* SampleError_DescribeError(void* self)
     return &err->message;
 }
 
-Result createSampleResult()
+Status createSampleResult()
 {
     SampleError* specific_error = malloc(sizeof(SampleError));
     char message[] = "This is a test error";
     SizeAwareBuffer_AllocateBuffer(sizeof(message)-1, &specific_error->message);
     memcpy(specific_error->message.raw_buffer, message, sizeof(message)-1);
 
-    Result res = {
+    Status res = {
         .success = 1,
         .error = {
             .describeError = SampleError_DescribeError,
@@ -45,14 +45,14 @@ void testSimpleResult()
 {
     printf("  - testSimpleResult\n");
 
-    Result res = createSampleResult();
-    SizeAwareBuffer* msg = Result_GetError(&res);
-    bool status = Result_IsSuccessful(&res);
+    Status res = createSampleResult();
+    SizeAwareBuffer* msg = Status_GetError(&res);
+    bool status = Status_IsSuccessful(&res);
 
     assert(memcmp(msg->raw_buffer, "This is a test error", msg->buffer_size) == 0);
     assert(status == 1);
 
-    Result_CleanUpResources(&res);
+    Status_CleanUpResources(&res);
 }
 
 int main()
