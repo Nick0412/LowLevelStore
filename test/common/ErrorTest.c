@@ -54,9 +54,65 @@ void verifySampleError()
     Error_DestroyError(&err);
 }
 
+void verifyKeyAlreadyExistsError()
+{
+    printf("  - verifyKeyAlreadyExistsError\n");
+
+    // Setup
+    char* test_message = "The key already exists inside the data store. Key: hello1";
+    SizeAwareBuffer key = {
+        .raw_buffer = (uint8_t*)"hello1",
+        .buffer_size = 6
+    };
+    SizeAwareBuffer expected = {
+        .buffer_size = strlen(test_message),
+        .raw_buffer = (uint8_t*)test_message
+    };
+
+    // Act
+    Error err = KeyAlreadyExistsInStoreError_Create(&key);
+
+    // Verify
+    SizeAwareBuffer* actual = Error_DescribeError(&err);
+    assert(SizeAwareBuffer_AreContentsSame(&expected, actual));
+
+    // Cleanup
+    Error_DestroyError(&err);
+}
+
+void verifyCanNotFindKeyError()
+{
+    printf("  - verifyCanNotFindKeyError\n");
+
+    // Setup
+    char* test_message = "Can not find key in data store. Key: test123";
+    SizeAwareBuffer key = {
+        .raw_buffer = (uint8_t*)"test123",
+        .buffer_size = 7
+    };
+    SizeAwareBuffer expected = {
+        .buffer_size = strlen(test_message),
+        .raw_buffer = (uint8_t*)test_message
+    };
+
+    // Act
+    Error err = CanNotFindKeyInStoreError_Create(&key);
+
+    // Verify
+    SizeAwareBuffer* actual = Error_DescribeError(&err);
+    assert(SizeAwareBuffer_AreContentsSame(&expected, actual));
+
+    // Cleanup
+    Error_DestroyError(&err);
+}
+
 int main()
 {
     printf("STARTING ERROR TEST\n");
 
     verifySampleError();
+
+    verifyKeyAlreadyExistsError();
+
+    verifyCanNotFindKeyError();
 }
