@@ -1,7 +1,7 @@
 #ifndef TCP_FUNCTIONS_H
 #define TCP_FUNCTIONS_H
 
-#include "common/SizeAwareBuffer.h"
+#include "SizeAwareBuffer.h"
 
 void sendBufferOverSocketWithRetry(int socket_fd, SizeAwareBuffer* buffer);
 
