@@ -1,16 +1,16 @@
+
+#include "messages/Common.h"
+#include "messages/PutKeyValueMessageRequest.h"
+#include "messages/PutKeyValueMessageResponse.h"
+#include "messages/GetValueMessageRequest.h"
+#include "messages/GetValueMessageResponse.h"
+#include "common/TcpFunctions.h"
 #include <stdio.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "messages/PutKeyValueMessageRequest.h"
-#include "messages/Constants.h"
-#include "messages/PutKeyValueMessageResponse.h"
-#include "messages/GetValueMessageRequest.h"
-#include "messages/GetValueMessageResponse.h"
-#include "common/TcpFunctions.h"
 
 int main(int argc, char** argv)
 {
