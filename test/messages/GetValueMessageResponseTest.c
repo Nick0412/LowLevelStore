@@ -1,5 +1,5 @@
 #include "messages/GetValueMessageResponse.h"
-#include "messages/Constants.h"
+#include "messages/Common.h"
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>

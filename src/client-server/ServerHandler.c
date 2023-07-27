@@ -1,6 +1,5 @@
 #include "client-server/ServerHandler.h"
 #include "common/TcpFunctions.h"
-#include "messages/Constants.h"
 #include "messages/Common.h"
 #include "messages/MessageTypes.h"
 #include "messages/GetValueMessageResponse.h"

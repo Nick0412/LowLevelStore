@@ -1,6 +1,6 @@
 #include "messages/PutKeyValueMessageResponse.h"
 
-#include "messages/Constants.h"
+#include "messages/Common.h"
 #include "messages/MessageTypes.h"
 #include "messages/MessageStatus.h"
 

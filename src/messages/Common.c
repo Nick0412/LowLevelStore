@@ -1,5 +1,4 @@
 #include "messages/Common.h"
-#include "messages/Constants.h"
 #include <stdio.h>
 
 void Messages_GetSizeFromBuffer(const SizeAwareBuffer* message_bytes, uint32_t* return_message_bytes_size)
