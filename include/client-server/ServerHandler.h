@@ -3,7 +3,7 @@
 
 #include "common/SizeAwareBuffer.h"
 #include "datastore/InMemoryDataStore.h"
-#include "messages/MessageTypes.h"
+#include "messages/Common.h"
 #include "messages/GetValueMessageRequest.h"
 #include "messages/PutKeyValueMessageRequest.h"
 

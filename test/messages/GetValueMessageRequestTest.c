@@ -1,5 +1,4 @@
 #include "messages/GetValueMessageRequest.h"
-#include "messages/MessageTypes.h"
 #include "messages/Common.h"
 #include <stdio.h>
 #include <assert.h>

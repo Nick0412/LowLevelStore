@@ -1,5 +1,4 @@
 #include "messages/PutKeyValueMessageResponse.h"
-#include "messages/MessageStatus.h"
 #include "messages/Common.h"
 #include <stdio.h>
 #include <assert.h>

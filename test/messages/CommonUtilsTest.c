@@ -1,5 +1,4 @@
 #include "messages/Common.h"
-#include "messages/MessageTypes.h"
 #include <assert.h>
 #include <stdio.h>
 

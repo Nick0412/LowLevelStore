@@ -2,7 +2,7 @@
 #define PUT_KEY_VALUE_MESSAGE_REQUEST_H
 
 #include <stdint.h>
-#include "MessageTypes.h"
+#include "Common.h"
 #include "common/SizeAwareBuffer.h"
 #include "common/MemoryPool.h"
 

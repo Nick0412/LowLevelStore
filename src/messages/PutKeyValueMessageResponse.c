@@ -1,8 +1,5 @@
 #include "messages/PutKeyValueMessageResponse.h"
-
 #include "messages/Common.h"
-#include "messages/MessageTypes.h"
-#include "messages/MessageStatus.h"
 
 void PutKeyValueMessageResponse_CalculateSize(const PutKeyValueMessageResponse* response, uint32_t* return_response_size)
 {

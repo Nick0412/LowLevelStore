@@ -1,7 +1,7 @@
 #ifndef PUT_KEY_VALUE_MESSAGE_RESPONSE_H
 #define PUT_KEY_VALUE_MESSAGE_RESPONSE_H
 
-#include "MessageStatus.h"
+#include "Common.h"
 #include "common/SizeAwareBuffer.h"
 #include <stdint.h>
 

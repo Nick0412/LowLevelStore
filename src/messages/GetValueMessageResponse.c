@@ -1,5 +1,4 @@
 #include "messages/GetValueMessageResponse.h"
-#include "messages/MessageTypes.h"
 #include "messages/Common.h"
 
 void GetValueMessageResponse_CalculateSize(const GetValueMessageResponse* response, uint32_t* return_size)
