@@ -3,7 +3,7 @@
 #include "messages/PutKeyValueMessageRequest.h"
 #include "messages/PutKeyValueMessageResponse.h"
 #include "messages/GetValueMessageRequest.h"
-#include "messages/GetValueMessageResponse.h"
+#include "messages/GetValueMessageResponseSuccess.h"
 #include "common/TcpFunctions.h"
 #include <stdio.h>
 #include <sys/socket.h>
@@ -71,7 +71,7 @@ int main(int argc, char** argv)
 
         uint32_t return_size;
         SizeAwareBuffer return_message;
-        GetValueMessageResponse response;
+        GetValueMessageResponseSuccess response;
         TcpFunction_ReceiveBufferSizeOverSocket(socket_pointer, &return_size);
         SizeAwareBuffer_AllocateBuffer(return_size, &return_message);
         SizeAwareBuffer_Place32BitValue(return_size, &return_message, MESSAGE_SIZE_OFFSET);
@@ -79,10 +79,10 @@ int main(int argc, char** argv)
             &return_message,
             MESSAGE_TYPE_OFFSET,
             MESSAGE_SIZE_BYTE_SIZE);
-        GetValueMessageResponse_AllocateMessage(&return_message, &response);
-        GetValueMessageResponse_Deserialize(&return_message, &response);
+        GetValueMessageResponseSuccess_AllocateMessage(&return_message, &response);
+        GetValueMessageResponseSuccess_Deserialize(&return_message, &response);
         printf("Value was %.*s\n", response.value.buffer_size, response.value.raw_buffer);
-        GetValueMessageResponse_DestroyMessage(&response);
+        GetValueMessageResponseSuccess_DestroyMessage(&response);
         SizeAwareBuffer_DestroyBuffer(&return_message);
     }
     else

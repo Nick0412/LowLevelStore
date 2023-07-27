@@ -4,58 +4,66 @@
 #include "common/SizeAwareBuffer.h"
 #include "common/MemoryPool.h"
 
+/*
+ ***************************************************************************************************
+ * STRUCT DECLARATIONS
+ ***************************************************************************************************
+*/
+
 /**
  * Size     | Type      | Value Size  | Value String
  * -------------------------------------------------
  * 4 Bytes  | 4 Bytes   | 4 Bytes     | ?? Bytes
  */
-typedef struct GetValueMessageResponse
+typedef struct GetValueMessageResponseSuccess
 {
-    // TODO: Add response status here for the client to check.
     SizeAwareBuffer value;
+} GetValueMessageResponseSuccess;
 
-} GetValueMessageResponse;
-
-void GetValueMessageResponse_CalculateSize(const GetValueMessageResponse* response, uint32_t* return_size);
-
-/**
- * Precondition: 
- *   - `return_message_bytes` must be allocated to hold the response
- */
-void GetValueMessageResponse_SerializeIntoBuffer(const GetValueMessageResponse* response, SizeAwareBuffer* return_message_bytes);
-
-/**
- * Precondition:
- *   - `return_response` must be allocated to hold the deserialized message bytes
+/*
+ ***************************************************************************************************
+ * FUNCTIONS DECLARATIONS
+ ***************************************************************************************************
 */
-void GetValueMessageResponse_Deserialize(const SizeAwareBuffer* message_bytes, GetValueMessageResponse* return_response);
 
-/**
- * Postcondition:
- *   - `return_message_bytes` is allocated and must be cleaned up
-*/
-void GetValueMessageResponse_AllocateBuffer(const GetValueMessageResponse* response, SizeAwareBuffer* return_message_bytes);
+void GetValueMessageResponseSuccess_CalculateSize(
+    const GetValueMessageResponseSuccess* response,
+    uint32_t* return_size);
 
-void GetValueMessageResponse_DestroyBuffer(SizeAwareBuffer* message_bytes);
+void GetValueMessageResponseSuccess_SerializeIntoBuffer(
+    const GetValueMessageResponseSuccess* response,
+    SizeAwareBuffer* return_message_bytes);
 
-/**
- * Postcondition:
- *   - `return_response` is allocated and must be cleaned up
-*/
-void GetValueMessageResponse_AllocateMessage(const SizeAwareBuffer* message_bytes, GetValueMessageResponse* return_response);
+void GetValueMessageResponseSuccess_Deserialize(
+    const SizeAwareBuffer* message_bytes,
+    GetValueMessageResponseSuccess* return_response);
 
-void GetValueMessageResponse_DestroyMessage(GetValueMessageResponse* response);
+void GetValueMessageResponseSuccess_AllocateBuffer(
+    const GetValueMessageResponseSuccess* response,
+    SizeAwareBuffer* return_message_bytes);
 
-void GetValueMessageResponse_GetValueSizeOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_value_size_offset);
+void GetValueMessageResponseSuccess_DestroyBuffer(SizeAwareBuffer* message_bytes);
 
-void GetValueMessageResponse_GetValueSize(const SizeAwareBuffer* message_bytes, uint32_t* return_value_size);
+void GetValueMessageResponseSuccess_AllocateMessage(
+    const SizeAwareBuffer* message_bytes,
+    GetValueMessageResponseSuccess* return_response);
 
-void GetValueMessageResponse_GetValueOffset(const SizeAwareBuffer* message_bytes, uint32_t* return_value_offset);
+void GetValueMessageResponseSuccess_DestroyMessage(GetValueMessageResponseSuccess* response);
 
-/**
- * Precondition:
- *   - `return_value` must be allocated to hold the value
-*/
-void GetValueMessageResponse_GetValue(const SizeAwareBuffer* message_bytes, SizeAwareBuffer* return_value);
+void GetValueMessageResponseSuccess_GetValueSizeOffset(
+    const SizeAwareBuffer* message_bytes,
+    uint32_t* return_value_size_offset);
+
+void GetValueMessageResponseSuccess_GetValueSize(
+    const SizeAwareBuffer* message_bytes,
+    uint32_t* return_value_size);
+
+void GetValueMessageResponseSuccess_GetValueOffset(
+    const SizeAwareBuffer* message_bytes,
+    uint32_t* return_value_offset);
+
+void GetValueMessageResponseSuccess_GetValue(
+    const SizeAwareBuffer* message_bytes,
+    SizeAwareBuffer* return_value);
 
 #endif

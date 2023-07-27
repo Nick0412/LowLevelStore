@@ -57,7 +57,7 @@ void ServerHandler_HandleMessage(int socket, InMemoryDataStore* store)
 void ServerHandler_HandleGetValueMessage(int socket, InMemoryDataStore* store,
     const GetValueMessageRequest* request)
 {
-    GetValueMessageResponse response;
+    GetValueMessageResponseSuccess response;
     SizeAwareBuffer* pointer_to_value;
     SizeAwareBuffer return_bytes;
     Status status = InMemoryDataStore_FindValue(store, &request->key, &pointer_to_value);
@@ -65,10 +65,10 @@ void ServerHandler_HandleGetValueMessage(int socket, InMemoryDataStore* store,
     if (Status_IsSuccessful(&status))
     {
         response.value = *pointer_to_value;
-        GetValueMessageResponse_AllocateBuffer(&response, &return_bytes);
-        GetValueMessageResponse_SerializeIntoBuffer(&response, &return_bytes);
+        GetValueMessageResponseSuccess_AllocateBuffer(&response, &return_bytes);
+        GetValueMessageResponseSuccess_SerializeIntoBuffer(&response, &return_bytes);
         TcpFunction_SendBufferOverSocketWithRetry(socket, &return_bytes);
-        GetValueMessageResponse_DestroyBuffer(&return_bytes);
+        GetValueMessageResponseSuccess_DestroyBuffer(&return_bytes);
     }
     // TODO: Fill out failing case implementations later
     else
