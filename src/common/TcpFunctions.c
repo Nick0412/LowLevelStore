@@ -3,7 +3,7 @@
 #include <sys/socket.h>
 #include <stdio.h>
 
-void sendBufferOverSocketWithRetry(int socket_fd, SizeAwareBuffer* buffer)
+void TcpFunction_SendBufferOverSocketWithRetry(int socket_fd, SizeAwareBuffer* buffer)
 {
     uint32_t bytes_sent = 0;
     while (bytes_sent < buffer->buffer_size)
@@ -15,7 +15,10 @@ void sendBufferOverSocketWithRetry(int socket_fd, SizeAwareBuffer* buffer)
     }
 }
 
-void receiveBufferOverSocketWithRetry(int socket_fd, SizeAwareBuffer* buffer, uint32_t offset, uint32_t shift)
+void TcpFunction_ReceiveBufferOverSocketWithRetry(int socket_fd,
+    SizeAwareBuffer* buffer,
+    uint32_t offset,
+    uint32_t shift)
 {
     uint32_t bytes_received = 0;
     while (bytes_received < buffer->buffer_size - shift)
@@ -27,7 +30,7 @@ void receiveBufferOverSocketWithRetry(int socket_fd, SizeAwareBuffer* buffer, ui
     }
 }
 
-void receiveBufferSizeOverSocket(int socket_fd, uint32_t* return_size)
+void TcpFunction_ReceiveBufferSizeOverSocket(int socket_fd, uint32_t* return_size)
 {
     uint8_t size_bytes[4];
     SizeAwareBuffer temp = {
@@ -35,6 +38,6 @@ void receiveBufferSizeOverSocket(int socket_fd, uint32_t* return_size)
         .buffer_size = 4
     };
 
-    receiveBufferOverSocketWithRetry(socket_fd, &temp, 0, 0);
+    TcpFunction_ReceiveBufferOverSocketWithRetry(socket_fd, &temp, 0, 0);
     SizeAwareBuffer_Get32BitValue(&temp, 0, return_size);
 }
