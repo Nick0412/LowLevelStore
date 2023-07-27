@@ -1,7 +1,7 @@
 #include "messages/GetValueMessageRequest.h"
 #include "messages/Constants.h"
 #include "messages/MessageTypes.h"
-#include "messages/CommonUtils.h"
+#include "messages/Common.h"
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>

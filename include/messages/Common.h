@@ -1,5 +1,5 @@
-#ifndef MESSAGES_COMMON_UTILS_H
-#define MESSAGES_COMMON_UTILS_H
+#ifndef MESSAGES_COMMON_H
+#define MESSAGES_COMMON_H
 
 #include "common/SizeAwareBuffer.h"
 #include "messages/MessageTypes.h"

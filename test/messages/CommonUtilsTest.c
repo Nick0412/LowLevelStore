@@ -1,4 +1,4 @@
-#include "messages/CommonUtils.h"
+#include "messages/Common.h"
 #include "messages/Constants.h"
 #include "messages/MessageTypes.h"
 #include <assert.h>
