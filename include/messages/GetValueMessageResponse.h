@@ -10,6 +10,11 @@
  ***************************************************************************************************
 */
 
+typedef enum GetValueMessageResponseErrorCode
+{
+    KEY_DOES_NOT_EXIST = 1
+} GetValueMessageResponseErrorCode;
+
 /**
  * Size     | Type      | Value Size  | Value String
  * -------------------------------------------------
@@ -19,6 +24,17 @@ typedef struct GetValueMessageResponseSuccess
 {
     SizeAwareBuffer value;
 } GetValueMessageResponseSuccess;
+
+/*
+ * Size    | Type     | Error Code  | Message Details Size | Message Details
+ * -------------------------------------------------------------------------
+ * 4 Bytes | 4 Bytes  | 4 Bytes     | 4 Bytes              | ?? Bytes
+*/
+typedef struct GetValueMessageResponseError
+{
+    GetValueMessageResponseErrorCode error_code;
+    SizeAwareBuffer error_details;
+} GetValueMessageResponseError;
 
 /*
  ***************************************************************************************************
@@ -65,5 +81,57 @@ void GetValueMessageResponseSuccess_GetValueOffset(
 void GetValueMessageResponseSuccess_GetValue(
     const SizeAwareBuffer* message_bytes,
     SizeAwareBuffer* return_value);
+
+// *************************************************************************************************
+// Start of error functions.
+// *************************************************************************************************
+
+void GetValueMessageResponseError_CalculateSize(
+    const GetValueMessageResponseError* response,
+    uint32_t* return_size);
+
+void GetValueMessageResponseError_SerializeIntoBuffer(
+    const GetValueMessageResponseError* response,
+    SizeAwareBuffer* return_message_bytes);
+
+void GetValueMessageResponseError_Deserialize(
+    const SizeAwareBuffer* message_bytes,
+    GetValueMessageResponseError* return_response);
+
+void GetValueMessageResponseError_AllocateBuffer(
+    const GetValueMessageResponseError* response,
+    SizeAwareBuffer* return_message_bytes);
+
+void GetValueMessageResponseError_DestroyBuffer(SizeAwareBuffer* message_bytes);
+
+void GetValueMessageResponseError_AllocateMessage(
+    const SizeAwareBuffer* message_bytes,
+    GetValueMessageResponseError* return_response);
+
+void GetValueMessageResponseError_DestroyMessage(GetValueMessageResponseError* response);
+
+void GetValueMessageResponseError_GetErrorCodeOffset(
+    const SizeAwareBuffer* message_bytes,
+    uint32_t* return_code_offset);
+
+void GetValueMessageResponseError_GetErrorCode(
+    const SizeAwareBuffer* message_bytes,
+    GetValueMessageResponseErrorCode* return_error_code);
+
+void GetValueMessageResponseError_GetErrorDetailsSizeOffset(
+    const SizeAwareBuffer* message_bytes,
+    uint32_t* return_details_size_offset);
+
+void GetValueMessageResponseError_GetErrorDetailsSize(
+    const SizeAwareBuffer* message_bytes,
+    uint32_t* return_details_size);
+
+void GetValueMessageResponseError_GetErrorDetailsOffset(
+    const SizeAwareBuffer* message_bytes,
+    uint32_t* return_details_offset);
+
+void GetValueMessageResponseError_GetErrorDetails(
+    const SizeAwareBuffer* message_bytes,
+    SizeAwareBuffer* return_error_details);
 
 #endif
