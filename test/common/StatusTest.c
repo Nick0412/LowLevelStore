@@ -43,8 +43,6 @@ Status createSampleResult()
 
 void testSimpleResult()
 {
-    printf("  - testSimpleResult\n");
-
     Status res = createSampleResult();
     SizeAwareBuffer* msg = Status_GetError(&res);
     bool status = Status_IsSuccessful(&res);

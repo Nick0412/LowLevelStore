@@ -7,8 +7,6 @@
 
 static void testSize()
 {
-    printf("  - testSize\n");
-
     PutKeyValueMessageRequest req = {
         .key = {
             .raw_buffer = (uint8_t*)"test-key",
@@ -31,8 +29,6 @@ static void testSize()
 
 static void testSerailizedOffsets()
 {
-    printf("  - testSerailizedOffsets\n");
-
     PutKeyValueMessageRequest req = {
         .key = {
             .raw_buffer = (uint8_t*)"test-key",
@@ -71,8 +67,6 @@ static void testSerailizedOffsets()
 
 static void testSerializeDeserialize()
 {
-    printf("  - testSerializeDeserialize\n");
-
     PutKeyValueMessageRequest req = {
         .key = {
             .raw_buffer = (uint8_t*)"test-key",

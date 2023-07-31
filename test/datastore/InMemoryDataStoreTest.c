@@ -5,8 +5,6 @@
 
 void testStoreInitialization()
 {
-    printf("  - testStoreInitialization\n");
-
     InMemoryDataStore store;
     InMemoryDataStore_Initialize(&store);
 
@@ -17,8 +15,6 @@ void testStoreInitialization()
 
 void findValueDoesNotExist()
 {
-    printf("  - findValueDoesNotExist\n");
-
     // Setup
     InMemoryDataStore store;
     SizeAwareBuffer key = {
@@ -47,8 +43,6 @@ void findValueDoesNotExist()
 
 void insertValueAndFind()
 {
-    printf("  - insertValueAndFind\n");
-
     // Setup
     InMemoryDataStore store;
     InMemoryDataStore_Initialize(&store);
@@ -80,8 +74,6 @@ void insertValueAndFind()
 
 void insertKeyTwiceError()
 {
-    printf("  - insertKeyTwiceError\n");
-
     // Setup
     InMemoryDataStore store;
     InMemoryDataStore_Initialize(&store);

@@ -7,8 +7,6 @@
 
 void testCalculateGetValueMessageResponseSize()
 {
-    printf("  - testCalculateGetValueMessageResponseSize\n");
-
     GetValueMessageResponseSuccess res = {
         .value = {
             .raw_buffer = (uint8_t*)"testvalue",
@@ -26,8 +24,6 @@ void testCalculateGetValueMessageResponseSize()
 
 void testSuccessSerializeDeserialize()
 {
-    printf("  - testSuccessSerializeDeserialize\n");
-
     GetValueMessageResponseSuccess res = {
         .value = {
             .raw_buffer = (uint8_t*)"testvalue",
@@ -51,8 +47,6 @@ void testSuccessSerializeDeserialize()
 
 void testErrorGetSize()
 {
-    printf("  - testErrorGetSize\n");
-
     char* message = "this is an error";
     GetValueMessageResponseError error = {
         .error_code = KEY_DOES_NOT_EXIST,
@@ -74,8 +68,6 @@ void testErrorGetSize()
 
 void testErrorSerializeDeserialize()
 {
-    printf("  - testErrorSerializeDeserialize\n");
-
     char* message = "this is an error";
     GetValueMessageResponseError error = {
         .error_code = KEY_DOES_NOT_EXIST,

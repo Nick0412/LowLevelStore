@@ -5,8 +5,6 @@
 
 void verifyAllocateAndDestroyBuffer()
 {
-    printf("  - verifyAllocateAndDestroyBuffer\n");
-
     SizeAwareBuffer buff;
     SizeAwareBuffer_AllocateBuffer(10, &buff);
 
@@ -21,8 +19,6 @@ void verifyAllocateAndDestroyBuffer()
 
 void verifyContentsComparisonOnBuffersTrue()
 {
-    printf("  - verifyContentsComparisonOnBuffersTrue\n");
-
     char data1[] = { 'a', 'b', 'c', 'd' };
     SizeAwareBuffer buff1 = {
         .buffer_size = 4,
@@ -40,8 +36,6 @@ void verifyContentsComparisonOnBuffersTrue()
 
 void verifyContentsComparisonOnBuffersFalse()
 {
-    printf("  - verifyContentsComparisonOnBuffersFalse\n");
-
     char data1[] = { 'a', 'b', 'c', 'd' };
     SizeAwareBuffer buff1 = {
         .buffer_size = 4,
@@ -59,8 +53,6 @@ void verifyContentsComparisonOnBuffersFalse()
 
 void verifyCopyIntoBuffer()
 {
-    printf("  - verifyCopyIntoBuffer\n");
-
     char data1[] = { 'a', 'b', '*', '*', 'e' };
     SizeAwareBuffer buff1 = {
         .buffer_size = 5,
@@ -86,8 +78,6 @@ void verifyCopyIntoBuffer()
 
 void verifyPlaceStringInBufferAndGet()
 {
-    printf("  - verifyPlaceStringInBufferAndGet\n");
-
     char string_data[] = { 'a', 'b', 'c' };
     SizeAwareBuffer string = {
         .raw_buffer = (uint8_t*)string_data,
@@ -108,8 +98,6 @@ void verifyPlaceStringInBufferAndGet()
 
 void verifyPlace32BitValueAndGet()
 {
-    printf("  - verifyPlace32BitValueAndGet\n");
-
     uint32_t value = 0xFEDCBA98;
     uint32_t offset = 2;
     uint8_t data[] = { 'a', 'b', 'c', 'w', 'x', 'y', 'z', 'e' };
@@ -127,7 +115,6 @@ void verifyPlace32BitValueAndGet()
     assert(buff.raw_buffer[3] == 0xDC);
     assert(buff.raw_buffer[4] == 0xBA);
     assert(buff.raw_buffer[5] == 0x98);
-
     assert(return_value == value);
 }
 

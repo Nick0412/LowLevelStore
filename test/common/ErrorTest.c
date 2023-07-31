@@ -44,8 +44,6 @@ Error CreateSampleError()
 
 void verifySampleError()
 {
-    printf("  - verifySampleError\n");
-
     Error err = CreateSampleError();
     SizeAwareBuffer* msg = Error_DescribeError(&err);
 
@@ -56,8 +54,6 @@ void verifySampleError()
 
 void verifyKeyAlreadyExistsError()
 {
-    printf("  - verifyKeyAlreadyExistsError\n");
-
     // Setup
     char* test_message = "The key already exists inside the data store. Key: hello1";
     SizeAwareBuffer key = {
@@ -82,8 +78,6 @@ void verifyKeyAlreadyExistsError()
 
 void verifyCanNotFindKeyError()
 {
-    printf("  - verifyCanNotFindKeyError\n");
-
     // Setup
     char* test_message = "Can not find key in data store. Key: test123";
     SizeAwareBuffer key = {

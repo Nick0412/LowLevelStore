@@ -6,8 +6,6 @@
 
 static void testCalculateSize()
 {
-    printf("  - testCalculateSize\n");
-
     PutKeyValueMessageResponse res = {
         .status = MESSAGE_SUCCESS
     };
@@ -21,8 +19,6 @@ static void testCalculateSize()
 
 static void testSerializeDeserialize()
 {
-    printf("  - testSerializeDeserialize\n");
-
     PutKeyValueMessageResponse res = {
         .status = MESSAGE_FAILURE
     };

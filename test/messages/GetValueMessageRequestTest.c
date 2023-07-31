@@ -6,8 +6,6 @@
 
 void testCalculateGetValueMessageRequestSize()
 {
-    printf("  - testCalculateGetValueMessageRequestSize\n");
-
     GetValueMessageRequest message = {
         .key = {
             .raw_buffer = (uint8_t*)"test_key",
@@ -25,8 +23,6 @@ void testCalculateGetValueMessageRequestSize()
 
 void testSerializeDeserialize()
 {
-    printf("  - testSerializeDeserialize\n");
-
     GetValueMessageRequest req = {
         .key = {
             .raw_buffer = (uint8_t*)"this-test-key",

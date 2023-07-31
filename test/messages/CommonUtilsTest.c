@@ -4,8 +4,6 @@
 
 void testGetSizeFromMessageBuffer()
 {
-    printf("  - testGetSizeFromMessageBuffer\n");
-
     uint32_t init_size = 123456;
     char temp_data[10];
     SizeAwareBuffer test_buffer = {
@@ -23,8 +21,6 @@ void testGetSizeFromMessageBuffer()
 
 void testGetTypeFromMessageBuffer()
 {
-    printf("  - testGetTypeFromMessageBuffer\n");
-
     MessageType message_type = GET_VALUE_MESSAGE_REQUEST_TYPE;
     uint8_t temp_data[10] = { '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a' };
     SizeAwareBuffer test_buffer = {

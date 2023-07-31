@@ -13,9 +13,7 @@ void helperTestPoolIsCleanedUp(MemoryPool* pool)
 }
 
 void testZeroNodePool()
-{
-    printf("  - testZeroNodePool\n");
-    
+{    
     MemoryPool pool;
     MemoryPool_Initialize(&pool);
 
@@ -24,8 +22,6 @@ void testZeroNodePool()
 
 void testMultiNodePool()
 {
-    printf("  - testMultiNodePool\n");
-
     MemoryPool pool;
     SizeAwareBuffer* buffer_pointer;
     SizeAwareBuffer* buffer_pointer_2;
