@@ -7,9 +7,14 @@
 
 typedef enum ErrorType
 {
-    ERROR_TYPE_EMPTY = 0,
-    ERROR_TYPE_LINKED_LIST = 1
+    ERROR_TYPE_EMPTY = 1,
+    ERROR_TYPE_LINKED_LIST = 2
 } ErrorType;
+
+typedef enum LinkedListError
+{
+    LINKED_LIST_ERROR_DATA_NOT_FOUND = 1
+} LinkedListError;
 
 typedef struct Result
 {
