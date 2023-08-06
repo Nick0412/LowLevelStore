@@ -21,6 +21,7 @@ typedef struct LinkedList
     uint32_t size;
 } LinkedList;
 
+
 void LinkedList_Initialize(LinkedList* list);
 
 void LinkedList_Destroy(LinkedList* list);
@@ -28,5 +29,9 @@ void LinkedList_Destroy(LinkedList* list);
 void LinkedList_InsertDataAtTail(LinkedList* list, const VoidBuffer* data);
 
 Result LinkedList_DeleteData(LinkedList* list, const VoidBuffer* data);
+
+Result LinkedList_Internal_CreateFailedToFindDataResult(const VoidBuffer* buffer);
+
+Result LinkedList_Internal_CreateSuccessResult();
 
 #endif

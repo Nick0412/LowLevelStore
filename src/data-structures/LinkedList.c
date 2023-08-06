@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static Result LinkedList_Internal_CreateSuccessResult()
+Result LinkedList_Internal_CreateSuccessResult()
 {
     Result res = {
         .is_successful = true,
@@ -14,7 +14,7 @@ static Result LinkedList_Internal_CreateSuccessResult()
     return res;
 }
 
-static Result LinkedList_Internal_CreateFailedToFindDataResult(const VoidBuffer* buffer)
+Result LinkedList_Internal_CreateFailedToFindDataResult(const VoidBuffer* buffer)
 {
     char* message_format = "Failed to find data in linked list. Data: %.*s";
     uint32_t num_message_bytes = snprintf(NULL,
@@ -99,10 +99,14 @@ Result LinkedList_DeleteData(LinkedList* list, const VoidBuffer* buffer)
     {
         if (VoidBuffer_AreEqual(buffer, &current->data))
         {
-            if (current == list->head) { list->head = current->next; }
-            if (current == list->tail) { list->tail = current->prev; }
-            if (current->prev != NULL) { current->prev->next = current->next; }
-            if (current->next != NULL) { current->next->prev = current->prev; }
+            if (current == list->head) 
+                list->head = current->next;
+            if (current == list->tail) 
+                list->tail = current->prev;
+            if (current->prev != NULL) 
+                current->prev->next = current->next;
+            if (current->next != NULL)
+                current->next->prev = current->prev;
 
             VoidBuffer_Destroy(&current->data);
             free(current);
