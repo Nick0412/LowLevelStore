@@ -28,10 +28,16 @@ void LinkedList_Destroy(LinkedList* list);
 
 void LinkedList_InsertDataAtTail(LinkedList* list, const VoidBuffer* data);
 
+void LinkedList_InsertShallowDataAtTail(LinkedList* list, VoidBuffer* data);
+
 Result LinkedList_DeleteData(LinkedList* list, const VoidBuffer* data);
 
 Result LinkedList_Internal_CreateFailedToFindDataResult(const VoidBuffer* buffer);
 
 Result LinkedList_Internal_CreateSuccessResult();
+
+void LinkedListNode_Internal_Print(const LinkedListNode* node);
+
+void LinkedList_Internal_Print(const LinkedList* list);
 
 #endif

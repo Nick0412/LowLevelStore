@@ -16,6 +16,7 @@ Result LinkedList_Internal_CreateSuccessResult()
 
 Result LinkedList_Internal_CreateFailedToFindDataResult(const VoidBuffer* buffer)
 {
+    // TODO: make this error message format into a function
     char* message_format = "Failed to find data in linked list. Data: %.*s";
     uint32_t num_message_bytes = snprintf(NULL,
         0,
@@ -51,7 +52,7 @@ void LinkedList_Initialize(LinkedList* list)
 void LinkedList_Destroy(LinkedList* list)
 {
     LinkedListNode* current = list->head;
-    LinkedListNode* next = current->next;
+    LinkedListNode* next = (current == NULL ? NULL : current->next);
 
     while (current != NULL)
     {
@@ -72,6 +73,30 @@ void LinkedList_InsertDataAtTail(LinkedList* list, const VoidBuffer* data)
     // Create new node
     LinkedListNode* temp = malloc(sizeof(LinkedListNode));
     VoidBuffer_DeepCopy(data, &temp->data);
+
+    if (list->size == 0)
+    {
+        list->head = temp;
+        list->tail = temp;
+
+        temp->next = NULL;
+        temp->prev = NULL;
+    }
+    else
+    {
+        list->tail->next = temp;
+        temp->prev = list->tail;
+        temp->next = NULL;
+        list->tail = temp;
+    }
+
+    list->size++;
+}
+
+void LinkedList_InsertShallowDataAtTail(LinkedList* list, VoidBuffer* data)
+{
+    LinkedListNode* temp = malloc(sizeof(LinkedListNode));
+    VoidBuffer_ShallowCopy(data, &temp->data);
 
     if (list->size == 0)
     {
@@ -118,4 +143,20 @@ Result LinkedList_DeleteData(LinkedList* list, const VoidBuffer* buffer)
     }
 
     return LinkedList_Internal_CreateFailedToFindDataResult(buffer);
+}
+
+void LinkedListNode_Internal_Print(const LinkedListNode* node)
+{
+    VoidBuffer_Print(&node->data);
+}
+
+void LinkedList_Internal_Print(const LinkedList* list)
+{
+    LinkedListNode* current = list->head;
+    while (current != NULL)
+    {
+        LinkedListNode_Internal_Print(current);
+        printf("|\nV\n");
+    }
+    printf("NULL\n");
 }
