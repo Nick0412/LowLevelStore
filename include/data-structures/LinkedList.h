@@ -40,4 +40,9 @@ void LinkedListNode_Internal_Print(const LinkedListNode* node);
 
 void LinkedList_Internal_Print(const LinkedList* list);
 
+// TODO: Return result indicating if linked list was deleted.
+void LinkedList_DeleteNode(LinkedList* list, LinkedListNode* node);
+
+bool LinkedList_Internal_IsNodeInList(const LinkedList* list, const LinkedListNode* node);
+
 #endif

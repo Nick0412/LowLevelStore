@@ -160,3 +160,40 @@ void LinkedList_Internal_Print(const LinkedList* list)
     }
     printf("NULL\n");
 }
+
+void LinkedList_DeleteNode(LinkedList* list, LinkedListNode* node)
+{
+    LinkedListNode* current = list->head;
+    while (current != NULL)
+    {
+        if (node == current)
+        {
+            if (current == list->head) 
+                list->head = current->next;
+            if (current == list->tail) 
+                list->tail = current->prev;
+            if (current->prev != NULL) 
+                current->prev->next = current->next;
+            if (current->next != NULL)
+                current->next->prev = current->prev;
+            
+            VoidBuffer_Destroy(&node->data);
+            free(node);
+            list->size--;
+        }
+    }
+}
+
+bool LinkedList_Internal_IsNodeInList(const LinkedList* list, const LinkedListNode* node)
+{
+    LinkedListNode* curr = list->head;
+    while (curr != NULL)
+    {
+        if (node == curr)
+        {
+            return true;
+        }
+        curr = curr->next;
+    }
+    return false;
+}
