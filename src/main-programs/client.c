@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "Header.h"
+#include "Helper.h"
 
 int main()
 {
@@ -23,7 +23,7 @@ int main()
 
         Socket_ReceiveBytesWithRetries(client_sock, (U8*)read_buffer, 5, 0);
         printf("Receiving bytes: %s\n", read_buffer);
-        sleep(2);
+        sleep(5);
 
         printf("\n\n");
     }

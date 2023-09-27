@@ -5,7 +5,8 @@
 #include <poll.h>
 #include <string.h>
 #include <unistd.h>
-#include "Header.h"
+#include <sys/ioctl.h>
+#include "Helper.h"
 
 int main()
 {
@@ -22,14 +23,14 @@ int main()
     int while_iter = 0;
     while (true)
     {
-        printf("While iterarion: %d\n", while_iter);
+        printf("While iteration: %d\n", while_iter);
         while_iter++;
         printf("Polling\n");
         int poll_status = poll(files_to_poll, number_of_files, -1);
         printf("Poll status: %d\n", poll_status);
         for (int i = 0; i < number_of_files; i++)
         {
-            // printf("Iteration %d\n", i);
+            printf("REVENTS: %x\n", files_to_poll[i].revents);
             if (files_to_poll[i].revents & POLLIN)
             {
                 if (i == 0)
@@ -41,12 +42,15 @@ int main()
 
                     files_to_poll[number_of_files] = (PollFileDescriptor) {
                         .fd = new_socket,
-                        .revents = 0x0001
+                        .events = POLLIN
                     };
                     number_of_files++;
                 }
                 else
                 {
+                    int count;
+                    ioctl(files_to_poll[i].fd, FIONREAD, &count);
+                    printf("COUNT BEFORE: %d\n", count);
                     printf("[1]: Read Write\n");
                     char read_buffer[2];
                     char write_buffer[5];
@@ -70,6 +74,8 @@ int main()
                         write_buffer[4] = '\0';
                         printf("[1]: Bytes sent %s\n", write_buffer);
                         Socket_SendBytesWithRetries(files_to_poll[i].fd, (U8*)write_buffer, 5, 0);
+                        ioctl(files_to_poll[i].fd, FIONREAD, &count);
+                        printf("COUNT AFTER: %d\n", count);
                     }
                 }
                 files_to_poll[i].revents = 0;
