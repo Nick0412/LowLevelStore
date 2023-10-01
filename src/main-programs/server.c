@@ -8,6 +8,45 @@
 #include <sys/ioctl.h>
 #include "Helper.h"
 
+/**
+ * ThreadPool tp;
+ * PollCollection pc
+ *  DataHandle function (tp)
+ * KeyValue store
+ * 
+ * InMemServer (tp, pc, store)
+ * 
+ * Future Plan:
+ *   File backed store
+ *     GPU backed B tree?
+ *     B/B+ tree
+ *     Persistence (Backups, checkpoints, restore, point in time)
+ *     Add new replicas, bootstrapping
+ *   
+ *   Deltas, Snapshots
+ *      
+ *   Query interface
+ *     Order results
+ *     Batch results
+ * 
+ *   Internode Communication
+ *     Heartbeats
+ *     Replica catchups
+ * 
+ *   Improve Client Application
+ *     TPS tests
+ *     Integ tests
+ *     Metrics 
+ *     
+ *   Memory Allocation Strategies
+ *     Memory Pools
+ *     Arenas
+ *     GC 
+ * 
+ *   Platform specific code compilation
+ *     multi platform
+ */
+
 int main()
 {
     Socket server_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -33,7 +72,7 @@ int main()
             printf("REVENTS: %x\n", files_to_poll[i].revents);
             if (files_to_poll[i].revents & POLLIN)
             {
-                if (i == 0)
+                if (i == 0) // IS LISTENER SOCKET
                 {
                     printf("[0]: New Socket\n");
                     SocketAddress client_address;
@@ -46,10 +85,11 @@ int main()
                     };
                     number_of_files++;
                 }
-                else
+                else // IS CLIENT SOCKET [1]
                 {
+                    // files_to_poll[i].fd
                     int count;
-                    ioctl(files_to_poll[i].fd, FIONREAD, &count);
+                    // ioctl(files_to_poll[i].fd, FIONREAD, &count);
                     printf("COUNT BEFORE: %d\n", count);
                     printf("[1]: Read Write\n");
                     char read_buffer[2];

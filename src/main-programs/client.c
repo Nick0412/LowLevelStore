@@ -6,6 +6,17 @@
 #include <unistd.h>
 #include "Helper.h"
 
+/**
+ * CLI (arguments)
+ * 
+ * InMemStoreClient client
+ * Socket socket
+ * SocketAddress
+ * 
+ * 
+ * @return int 
+ */
+
 int main()
 {
     Socket client_sock = socket(AF_INET, SOCK_STREAM, 0);

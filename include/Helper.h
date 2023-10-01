@@ -1,6 +1,7 @@
 #ifndef HELPER_H
 #define HELPER_H
 
+#include <pthread.h>
 #include <stdint.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -10,6 +11,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#define PRINT_TEST() printf("Starting test: %s\n", __func__);
+#define DEBUG(num) printf("Point %d\n", num);
 
 typedef uint8_t U8;
 typedef uint16_t U16;
@@ -26,6 +30,11 @@ typedef struct sockaddr_in SocketAddress;
 typedef socklen_t SocketSize;
 typedef struct sockaddr GenericSocketAddress;
 typedef struct pollfd PollFileDescriptor;
+
+typedef pthread_t Thread;
+typedef pthread_mutex_t Mutex;
+typedef pthread_cond_t ConditionVariable;
+typedef void (*RunFunction)(void*);
 
 typedef struct Vector
 {
@@ -63,10 +72,27 @@ typedef struct PollCollection
     PollFileDescriptor* poll_fds;
 } PollCollection;
 
+typedef struct ThreadTask
+{
+    RunFunction function;
+    U32 argument_size;
+    void* argument;
+} ThreadTask;
+
 typedef struct ThreadPool
 {
-
+    Mutex queue_mutex;
+    ConditionVariable work_is_ready_cv;
+    Queue task_queue;
+    U32 number_of_threads;
+    bool should_stop;
+    Thread* worker_threads;
 } ThreadPool;
+
+typedef struct ThreadStartupArgument
+{
+    ThreadPool* thread_pool_pointer;
+} ThreadStartupArgument;
 
 typedef struct KeyValueServer
 {
@@ -101,9 +127,20 @@ void Queue_Initialize(Queue* queue);
 void Queue_Destroy(Queue* queue);
 void Queue_IsEmpty(Queue* queue, bool* return_queue_is_empty);
 void Queue_PushBack(Queue* queue, void* data, U32 number_of_bytes);
+void Queue_PushBackWithoutCopy(Queue* queue, void* data, U32 number_of_bytes);
 void Queue_GetSizeOfHead(Queue* queue, U32* return_number_of_bytes);
 void Queue_PopHead(Queue* queue, void* return_data_pointer);
+bool Queue_Internal_IsEmpty(Queue* queue);
 void Queue_Internal_OneNodeDestroy(Queue* queue);
 void Queue_Internal_MultiNodeDestroy(Queue* queue);
+
+void ThreadPool_Initialize(ThreadPool* thread_pool, U32 number_of_threads);
+void ThreadPool_AddWork(ThreadPool* thread_pool, const ThreadTask* thread_task);
+void* ThreadPool_Internal_ThreadFunction(void* thread_argument);
+void ThreadPool_Internal_FixThreadTaskArgumentPointer(void* encoded_thread_task_with_argument);
+void ThreadPool_Destroy(ThreadPool* thread_pool);
+
+void PrintHexBytes(void* data, U32 number_of_bytes);
+bool Utility_AreBytesTheSame(void* data1, void* data2, U32 number_of_bytes);
 
 #endif

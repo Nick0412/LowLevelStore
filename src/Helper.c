@@ -172,7 +172,6 @@ void PollCollection_Initialize(PollCollection* poll_collection, Socket server_so
     };
 }
 
-// TODO: Finish
 void PollCollection_AddNewConnection(PollCollection* poll_collection, Socket client_socket)
 {
     if (poll_collection->number_of_elements)
@@ -216,6 +215,8 @@ void PollCollection_Poll(PollCollection* poll_collection, S32 timeout_in_millis)
             else
             {
                 // PollCollection_Internal_HandleDataSocket();
+                // Pass thread pool to this function and add work to it
+                // Need to keep track of FDs that are being worked on in the pool
             }
         }
     }
@@ -297,7 +298,32 @@ void Queue_PushBack(Queue* queue, void* data, U32 number_of_bytes)
     };
     memcpy(new_node->data_pointer, data, number_of_bytes);
 
-    if (queue->head == queue->tail)
+    if (queue->head == NULL)
+    {
+        queue->head = new_node;
+        queue->tail = new_node;
+    }
+
+    else
+    {
+        queue->tail->next = new_node;
+        queue->tail = new_node;
+    }
+
+    queue->number_of_elements++;
+}
+
+void Queue_PushBackWithoutCopy(Queue* queue, void* data, U32 number_of_bytes)
+{
+    QueueNode* new_node = malloc(sizeof(QueueNode));
+    *new_node = (QueueNode) {
+        .next = NULL,
+        .data_pointer = data,
+        .previous = queue->tail,
+        .number_of_bytes = number_of_bytes
+    };
+
+    if (queue->number_of_elements == 0)
     {
         queue->head = new_node;
         queue->tail = new_node;
@@ -313,36 +339,64 @@ void Queue_PushBack(Queue* queue, void* data, U32 number_of_bytes)
 
 void Queue_GetSizeOfHead(Queue* queue, U32* return_number_of_bytes)
 {
-    if (queue->head != NULL)
+    if (queue == NULL)
+    {
+        perror("Queue is NULL\n");
+    }
+
+    if (queue->number_of_elements != 0)
     {
         *return_number_of_bytes = queue->head->number_of_bytes;
+    }
+    else
+    {
+        *return_number_of_bytes = 0;
     }
 }
 
 void Queue_PopHead(Queue* queue, void* return_data_pointer)
 {
-    QueueNode* node = queue->head;
-    memcpy(return_data_pointer, node->data_pointer, node->number_of_bytes);
-
-    if (queue->head == queue->tail)
+    if (return_data_pointer == NULL)
     {
+        perror("Return data pointer is NULL");
+        return;
+    }
+
+    if (queue->number_of_elements == 0)
+    {
+        perror("Tried to remove from empty queue");
+        return;
+    }
+
+    if (queue->number_of_elements == 1)
+    {
+        memcpy(return_data_pointer, queue->head->data_pointer, queue->head->number_of_bytes);
         free(queue->head->data_pointer);
         free(queue->head);
 
-        *queue = (Queue) {
-            .head = NULL,
-            .tail = NULL,
-            .number_of_elements = 0
-        };
+        queue->head = NULL;
+        queue->tail = NULL;
+        queue->number_of_elements = 0;
+        return;
     }
 
-    else
-    {
-        free(node->data_pointer);
-        free(node);
-        queue->head = queue->head->next;
-        queue->number_of_elements--;
-    }
+    QueueNode* node = queue->head;
+    queue->head = queue->head->next;
+    queue->head->previous = NULL;
+    queue->number_of_elements--;
+
+    memcpy(return_data_pointer, node->data_pointer, node->number_of_bytes);
+    free(node->data_pointer);
+    free(node);
+    node = NULL;
+}
+
+bool Queue_Internal_IsEmpty(Queue* queue)
+{
+    bool is_empty;
+    Queue_IsEmpty(queue, &is_empty);
+
+    return is_empty;
 }
 
 void Queue_Internal_OneNodeDestroy(Queue* queue)
@@ -369,7 +423,7 @@ void Queue_Internal_MultiNodeDestroy(Queue* queue)
         free(current);
 
         current = next;
-        next = next->next;
+        next = (next == NULL ? NULL : next->next);
     }
 
     *queue = (Queue) {
@@ -379,3 +433,115 @@ void Queue_Internal_MultiNodeDestroy(Queue* queue)
     };
 }
 
+void ThreadPool_Initialize(ThreadPool* thread_pool, U32 number_of_threads)
+{
+    thread_pool->number_of_threads = number_of_threads;
+    thread_pool->worker_threads = calloc(number_of_threads, sizeof(Thread));
+    thread_pool->should_stop = false;
+
+    Queue_Initialize(&thread_pool->task_queue);
+    pthread_mutex_init(&thread_pool->queue_mutex, NULL);
+    pthread_cond_init(&thread_pool->work_is_ready_cv, NULL);
+
+    for (U32 i = 0; i < number_of_threads; i++)
+    {
+        pthread_create(&thread_pool->worker_threads[i], NULL, &ThreadPool_Internal_ThreadFunction, thread_pool);
+    }
+}
+
+void ThreadPool_AddWork(ThreadPool* thread_pool, const ThreadTask* thread_task)
+{
+    pthread_mutex_lock(&thread_pool->queue_mutex);
+
+    if (!thread_pool->should_stop)
+    {
+        // Setup the thread task data and argument.
+        U32 size_of_task_and_argument = sizeof(ThreadTask) + thread_task->argument_size;
+        void* task_data = malloc(size_of_task_and_argument);
+        void* argument_offset_pointer = (U8*)task_data + sizeof(ThreadTask);
+        memcpy(task_data, thread_task, sizeof(ThreadTask));
+        memcpy(thread_task->argument, argument_offset_pointer, thread_task->argument_size);
+        ThreadPool_Internal_FixThreadTaskArgumentPointer(task_data);
+
+        // Place that data on the queue and alert any waiting threads there is data
+        Queue_PushBackWithoutCopy(&thread_pool->task_queue, task_data, size_of_task_and_argument);
+        pthread_cond_broadcast(&thread_pool->work_is_ready_cv);
+    }
+
+    pthread_mutex_unlock(&thread_pool->queue_mutex);
+}
+
+void ThreadPool_Internal_FixThreadTaskArgumentPointer(void* encoded_thread_task_with_argument)
+{
+    ThreadTask* task_pointer = (ThreadTask*)encoded_thread_task_with_argument;
+    void* argument_pointer = (U8*)encoded_thread_task_with_argument + sizeof(ThreadTask);
+    task_pointer->argument = argument_pointer;
+}
+
+void* ThreadPool_Internal_ThreadFunction(void* thread_argument)
+{
+    ThreadPool* thread_pool = (ThreadPool*)thread_argument;
+
+    while (true)
+    {
+        pthread_mutex_lock(&thread_pool->queue_mutex);
+        while (!thread_pool->should_stop && Queue_Internal_IsEmpty(&thread_pool->task_queue))
+        {
+            pthread_cond_wait(&thread_pool->work_is_ready_cv, &thread_pool->queue_mutex);
+        }
+
+        if (thread_pool->should_stop)
+        {
+            break;
+        }
+
+        U32 thread_task_and_argument_size;
+        thread_pool->task_queue;
+        Queue_GetSizeOfHead(&thread_pool->task_queue, &thread_task_and_argument_size);
+        void* thread_task_and_argument = malloc(thread_task_and_argument_size);
+
+        Queue_PopHead(&thread_pool->task_queue, thread_task_and_argument);
+        ThreadPool_Internal_FixThreadTaskArgumentPointer(thread_task_and_argument);
+
+        pthread_mutex_unlock(&thread_pool->queue_mutex);
+
+        ThreadTask* thread_task = (ThreadTask*)thread_task_and_argument;
+        thread_task->function(thread_task->argument);
+
+        free(thread_task_and_argument);
+    }
+
+    pthread_mutex_unlock(&thread_pool->queue_mutex);
+    return NULL;
+}
+
+void ThreadPool_Destroy(ThreadPool* thread_pool)
+{
+    pthread_mutex_lock(&thread_pool->queue_mutex);
+    Queue_Destroy(&thread_pool->task_queue);
+    thread_pool->should_stop = true;
+    pthread_cond_broadcast(&thread_pool->work_is_ready_cv);
+    pthread_mutex_unlock(&thread_pool->queue_mutex);
+
+    for (U32 i = 0; i < thread_pool->number_of_threads; i++)
+    {
+        pthread_join(thread_pool->worker_threads[i], NULL);
+    }
+
+    free(thread_pool->worker_threads);
+}
+
+void PrintHexBytes(void* data, U32 number_of_bytes)
+{
+    for (U32 i = 0; i < number_of_bytes; i++)
+    {
+        printf("0x%x ", ((U8*)data)[i]);
+    }
+
+    printf("\n");
+}
+
+bool Utility_AreBytesTheSame(void* data1, void* data2, U32 number_of_bytes)
+{
+    return (memcmp(data1, data2, number_of_bytes) == 0);
+}
