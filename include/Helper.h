@@ -1,10 +1,10 @@
 #ifndef HELPER_H
 #define HELPER_H
 
+#include <arpa/inet.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
 #include <poll.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -12,9 +12,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdatomic.h>
+#include <netinet/in.h>
+#include <math.h>
 
 #define PRINT_TEST() printf("Starting test: %s\n", __func__);
 #define DEBUG(num) printf("Point %d\n", num); 
+
+typedef char* String;
 
 typedef uint8_t U8;
 typedef uint16_t U16;
@@ -27,6 +31,7 @@ typedef int32_t S32;
 typedef int64_t S64;
 
 typedef int Socket;
+typedef U16 Port;
 typedef struct sockaddr_in SocketAddress;
 typedef socklen_t SocketSize;
 typedef struct sockaddr GenericSocketAddress;
@@ -92,17 +97,19 @@ typedef struct ThreadPool
 
 typedef struct SocketThreadGroup
 {
+    Socket listening_socket;
+    atomic_bool should_close;
     Thread* thread_group;
 } SocketThreadGroup;
 
-typedef struct KeyValueServer
+typedef struct LowLevelStoreServer
 {
     Socket server_socket;
     SocketAddress socket_address;
     InMemoryKeyValueStore datastore;
     PollCollection poll_collection;
     ThreadPool thread_pool;
-} KeyValueServer;
+} LowLevelStoreServer;
 
 typedef enum MessageStatus
 {
@@ -128,6 +135,43 @@ typedef enum MessageOffset
     MESSAGE_OFFSET_DATA = 8
 } MessageOffset;
 
+/**
+ * Struct representation of an IP address. `ip_parts[0] is meant to be the most significant byte and
+ * `ip_parts[3] is the least.
+ * 
+ * Ex. IP Address 1.2.3.4 would be represented as
+ * ip_parts[0] = 1
+ * ip_parts[1] = 2
+ * ip_parts[2] = 3
+ * ip_parts[3] = 4
+*/
+typedef struct IPv4Address
+{
+    U8 ip_parts[4];
+} IPv4Address;
+
+typedef struct ServerConnectionDetails
+{
+    Socket server_socket;
+    SocketAddress server_socket_address;
+    IPv4Address ip_address;
+    Port port;
+    U32 number_of_connections_allowed;
+} ServerConnectionDetails;
+
+/**
+ **************************************************************************************************
+ ************************************** FUNCTION DECLARATIONS *************************************
+ **************************************************************************************************
+*/
+
+IPv4Address IPv4Address_Create(U8 byte_0, U8 byte_1, U8 byte_2, U8 byte_3);
+// Allocates space for string. Needs to be cleaned up.
+String IPv4Address_Internal_ConvertToString_Allocation(const IPv4Address* ip_address);
+void IPv4Address_Internal_WriteIPv4AddressToBuffer(const IPv4Address* ip_address, String buffer_to_write_to);
+ServerConnectionDetails ServerConnectionDetails_Create(const IPv4Address* ip_address, Port port, U32 number_of_connections_allowed);
+SocketAddress SocketAddress_Create(const IPv4Address* address, U16 port);
+
 void Vector_Initialize(Vector* vector, U32 number_of_elements, U32 capacity, U32 size_of_element_type);
 void Vector_Destroy(Vector* vector);
 void Vector_CopyElementAtIndex(Vector* vector, U32 index, void* location_to_copy_element);
@@ -136,7 +180,6 @@ void Vector_Internal_Resize(Vector* vector);
 
 void Socket_SendBytesWithRetries(Socket file_descriptor, U8* buffer_to_send, U32 buffer_size, U32 number_of_retries);
 void Socket_ReceiveBytesWithRetries(Socket file_descriptor, U8* buffer_to_receive, U32 buffer_size, U32 number_of_retries);
-SocketAddress Socket_CreateIPv4InetAddress(char* ip_address, U16 port);
 void Socket_ConnectClientSocketToAddress(Socket client_socket, SocketAddress address);
 void Socket_BindAddressToServerSocket(Socket server_socket, SocketAddress* address);
 void Socket_ListenOnServerSocket(Socket server_socket, U32 number_of_connections);
@@ -172,5 +215,6 @@ void Utility_Get32BitUnsignedValueFromBuffer(const void* source_buffer, U32 offs
 void Utility_Set32BitUnsignedValueInBuffer(void* destination_buffer, U32 offset_into_source, const U32 value);
 void Utility_GetStringFromBuffer(const void* source_buffer, const U32 offset_into_buffer, const U32 string_size, void* return_string_buffer);
 void Utility_SetStringInBuffer(void* destination_buffer, const U32 offset_into_buffer, const U32 string_size, const void* source_string_buffer);
+U32 Utility_CountDigitsInUnsigned16Value(U16 number);
 
 #endif

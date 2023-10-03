@@ -1,5 +1,27 @@
 #include "Helper.h"
 
+IPv4Address IPv4Address_Create(U8 byte_0, U8 byte_1, U8 byte_2, U8 byte_3)
+{
+    IPv4Address address = {
+        .ip_parts = {byte_0, byte_1, byte_2, byte_3}
+    };
+
+    return address;
+}
+
+ServerConnectionDetails ServerConnectionDetails_Create(const IPv4Address* ip_address, Port port, U32 number_of_connections_allowed)
+{
+    ServerConnectionDetails details = {
+        .ip_address = *ip_address,
+        .number_of_connections_allowed = number_of_connections_allowed,
+        .port = port,
+        .server_socket = socket(AF_INET, SOCK_STREAM, 0),
+        .server_socket_address = SocketAddress_Create(ip_address, port)
+    };
+
+    return details;
+}
+
 void Vector_Initialize(
     Vector* vector,
     U32 number_of_elements,
@@ -73,6 +95,7 @@ void Socket_SendBytesWithRetries(
     U32 buffer_size,
     U32 number_of_retries)
 {
+    (void)number_of_retries;
     U32 total_number_of_bytes_sent = 0;
     U32 number_of_bytes_remaining = buffer_size;
     
@@ -99,6 +122,7 @@ void Socket_ReceiveBytesWithRetries(
     U32 buffer_size,
     U32 number_of_retries)
 {
+    (void)number_of_retries;
     U32 total_number_of_bytes_received = 0;
     U32 number_of_bytes_remaining = buffer_size;
 
@@ -119,13 +143,45 @@ void Socket_ReceiveBytesWithRetries(
     }
 }
 
-SocketAddress Socket_CreateIPv4InetAddress(char* ip_address, U16 port)
+String IPv4Address_Internal_ConvertToString_Allocation(const IPv4Address* ip_address)
+{
+    U32 number_of_characters_in_ip_address = 0;
+    // Need 3 characters for the decimals
+    number_of_characters_in_ip_address += 3;
+    for (U32 i = 0; i < 4; i++)
+    {
+        number_of_characters_in_ip_address += Utility_CountDigitsInUnsigned16Value(ip_address->ip_parts[i]);
+    }
+
+    String string_data = malloc(number_of_characters_in_ip_address);
+    IPv4Address_Internal_WriteIPv4AddressToBuffer(ip_address, string_data);
+
+    return string_data;
+}
+
+void IPv4Address_Internal_WriteIPv4AddressToBuffer(const IPv4Address* ip_address, String buffer_to_write_to)
+{
+    U32 offset = 0;
+    for (U32 i = 0; i < 4; i++)
+    {
+        offset += sprintf(buffer_to_write_to + offset, "%d", ip_address->ip_parts[i]);
+        if (i != 3)
+        {
+            offset += sprintf(buffer_to_write_to + offset, ".");
+        }
+    }
+}
+
+SocketAddress SocketAddress_Create(const IPv4Address* ip_address, U16 port)
 {
     SocketAddress address = {
         .sin_family = AF_INET,
         .sin_port = htons(port)
     };
-    inet_aton(ip_address, &address.sin_addr);
+
+    char* ip_address_string = IPv4Address_Internal_ConvertToString_Allocation(ip_address);
+    inet_pton(AF_INET, ip_address_string, &address.sin_addr);
+    free(ip_address_string);
 
     return address;
 }
@@ -257,7 +313,7 @@ void PollCollection_Internal_HandleListenerSocket(PollCollection* poll_collectio
 void PollCollection_Internal_HandleDataSocket(ThreadPool* thread_pool, Socket client_connected_socket)
 {
     ThreadTask task = {
-        .argument = client_connected_socket,
+        .argument = (void*)&client_connected_socket,
         .argument_size = sizeof(Socket),
         .function = NULL
     };
@@ -507,7 +563,6 @@ void* ThreadPool_Internal_ThreadFunction(void* thread_argument)
         }
 
         U32 thread_task_and_argument_size;
-        thread_pool->task_queue;
         Queue_GetSizeOfHead(&thread_pool->task_queue, &thread_task_and_argument_size);
         void* thread_task_and_argument = malloc(thread_task_and_argument_size);
 
@@ -542,19 +597,19 @@ void ThreadPool_Destroy(ThreadPool* thread_pool)
     free(thread_pool->worker_threads);
 }
 
-void Messages_HandleMessage(Socket client_connected_socket)
-{
-    // Recv 4 bytes to get size
+// void Messages_HandleMessage(Socket client_connected_socket)
+// {
+//     // Recv 4 bytes to get size
     
-    // Malloc buffer to hold remaining data
-    // Get message type
-    // Dispatch based on type
-    // Deserialize data into message struct 
-    // Do action
-    // Get Result 
-    // Serialize Result
-    // Send Result back
-}
+//     // Malloc buffer to hold remaining data
+//     // Get message type
+//     // Dispatch based on type
+//     // Deserialize data into message struct 
+//     // Do action
+//     // Get Result 
+//     // Serialize Result
+//     // Send Result back
+// }
 
 void Utility_PrintHexBytes(void* data, U32 number_of_bytes)
 {
@@ -601,4 +656,9 @@ void Utility_GetStringFromBuffer(const void* source_buffer, const U32 offset_int
 void Utility_SetStringInBuffer(void* destination_buffer, const U32 offset_into_buffer, const U32 string_size, const void* source_string_buffer)
 {
     memcpy(destination_buffer + offset_into_buffer, source_string_buffer, string_size);
+}
+
+U32 Utility_CountDigitsInUnsigned16Value(U16 number)
+{
+    return log10(number) + 1;
 }

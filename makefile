@@ -9,10 +9,9 @@ RECURSE = $(foreach dir,$(wildcard $1*),$(call RECURSE,$(dir)/,$2)$(filter $(sub
 #############################################################################
 # C Pre Processor flags
 CPPFLAGS 	:= -Iinclude
-# CFLAGS   	:= -Wall -Wextra -Werror
-CFLGAS		:=
+CFLAGS   	:= -Wall -Wextra -Werror -std=c11
 LDFLAGS  	:=
-LDLIBS   	:=
+LDLIBS   	:= -lm
 
 
 #############################################################################
