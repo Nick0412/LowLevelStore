@@ -104,8 +104,7 @@ typedef struct SocketThreadGroup
 
 typedef struct LowLevelStoreServer
 {
-    Socket server_socket;
-    SocketAddress socket_address;
+    ServerConnectionDetails connection_details;
     InMemoryKeyValueStore datastore;
     PollCollection poll_collection;
     ThreadPool thread_pool;
@@ -136,8 +135,8 @@ typedef enum MessageOffset
 } MessageOffset;
 
 /**
- * Struct representation of an IP address. `ip_parts[0] is meant to be the most significant byte and
- * `ip_parts[3] is the least.
+ * Struct representation of an IP address. `ip_parts[0]` is meant to be the most significant byte and
+ * `ip_parts[3]` is the least.
  * 
  * Ex. IP Address 1.2.3.4 would be represented as
  * ip_parts[0] = 1
