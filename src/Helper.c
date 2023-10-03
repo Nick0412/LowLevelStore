@@ -174,7 +174,7 @@ void PollCollection_Initialize(PollCollection* poll_collection, Socket server_so
 
 void PollCollection_AddNewConnection(PollCollection* poll_collection, Socket client_socket)
 {
-    if (poll_collection->number_of_elements)
+    if (poll_collection->number_of_elements == poll_collection->capacity)
     {
         PollCollection_Internal_Resize(poll_collection);
     }
@@ -188,19 +188,10 @@ void PollCollection_AddNewConnection(PollCollection* poll_collection, Socket cli
 }
 
 // TODO: Finish
-void PollCollection_Poll(PollCollection* poll_collection, S32 timeout_in_millis)
+void PollCollection_Poll(PollCollection* poll_collection, S32 timeout_in_millis, ThreadPool* thread_pool)
 {
     S32 poll_result = poll(poll_collection->poll_fds, poll_collection->number_of_elements, timeout_in_millis);
-
-    if (poll_result < 0)
-    {
-        perror("Poll encountered an error\n");
-    }
-
-    if (poll_result == 0)
-    {
-        perror("Poll timed out\n");
-    }
+    PollCollection_Internal_HandlePollErrors(poll_result);
 
     for (U32 index = 0; index < poll_collection->number_of_elements; index++)
     {
@@ -214,11 +205,22 @@ void PollCollection_Poll(PollCollection* poll_collection, S32 timeout_in_millis)
             }
             else
             {
-                // PollCollection_Internal_HandleDataSocket();
-                // Pass thread pool to this function and add work to it
-                // Need to keep track of FDs that are being worked on in the pool
+                PollCollection_Internal_HandleDataSocket(thread_pool, poll_fd.fd);
             }
         }
+    }
+}
+
+void PollCollection_Internal_HandlePollErrors(S32 poll_result)
+{
+    if (poll_result < 0)
+    {
+        perror("Poll encountered an error\n");
+    }
+
+    if (poll_result == 0)
+    {
+        perror("Poll timed out\n");
     }
 }
 
@@ -252,7 +254,16 @@ void PollCollection_Internal_HandleListenerSocket(PollCollection* poll_collectio
     PollCollection_AddNewConnection(poll_collection, new_socket);
 }
 
-// void PollCollection_Internal_HandleDataSocket();
+void PollCollection_Internal_HandleDataSocket(ThreadPool* thread_pool, Socket client_connected_socket)
+{
+    ThreadTask task = {
+        .argument = client_connected_socket,
+        .argument_size = sizeof(Socket),
+        .function = NULL
+    };
+
+    ThreadPool_AddWork(thread_pool, &task);
+}
 
 void Queue_Initialize(Queue* queue)
 {
@@ -531,7 +542,21 @@ void ThreadPool_Destroy(ThreadPool* thread_pool)
     free(thread_pool->worker_threads);
 }
 
-void PrintHexBytes(void* data, U32 number_of_bytes)
+void Messages_HandleMessage(Socket client_connected_socket)
+{
+    // Recv 4 bytes to get size
+    
+    // Malloc buffer to hold remaining data
+    // Get message type
+    // Dispatch based on type
+    // Deserialize data into message struct 
+    // Do action
+    // Get Result 
+    // Serialize Result
+    // Send Result back
+}
+
+void Utility_PrintHexBytes(void* data, U32 number_of_bytes)
 {
     for (U32 i = 0; i < number_of_bytes; i++)
     {
@@ -544,4 +569,36 @@ void PrintHexBytes(void* data, U32 number_of_bytes)
 bool Utility_AreBytesTheSame(void* data1, void* data2, U32 number_of_bytes)
 {
     return (memcmp(data1, data2, number_of_bytes) == 0);
+}
+
+void Utility_Get32BitUnsignedValueFromBuffer(const void* source_buffer, U32 offset_into_source, U32* return_value)
+{
+    U8* byte_buffer = (U8*)source_buffer;
+    *return_value = (byte_buffer[offset_into_source + 3] & 0xFF) << 24 |
+                    (byte_buffer[offset_into_source + 2] & 0xFF) << 16 |
+                    (byte_buffer[offset_into_source + 1] & 0xFF) << 8 |
+                    (byte_buffer[offset_into_source] & 0xFF);
+
+    *return_value = ntohl(*return_value);
+}
+
+void Utility_Set32BitUnsignedValueInBuffer(void* destination_buffer, U32 offset_into_source, const U32 value)
+{
+    U8* byte_buffer = (U8*)destination_buffer;
+    U32 network_value = htonl(value);
+
+    byte_buffer[offset_into_source] = network_value & 0xFF;
+    byte_buffer[offset_into_source + 1] = (network_value >> 8) & 0xFF;
+    byte_buffer[offset_into_source + 2] = (network_value >> 16) & 0xFF;
+    byte_buffer[offset_into_source + 3] = (network_value >> 24) & 0xFF;
+}
+
+void Utility_GetStringFromBuffer(const void* source_buffer, const U32 offset_into_buffer, const U32 string_size, void* return_string_buffer)
+{
+    memcpy(return_string_buffer, source_buffer + offset_into_buffer, string_size);
+}
+
+void Utility_SetStringInBuffer(void* destination_buffer, const U32 offset_into_buffer, const U32 string_size, const void* source_string_buffer)
+{
+    memcpy(destination_buffer + offset_into_buffer, source_string_buffer, string_size);
 }

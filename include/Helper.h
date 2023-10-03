@@ -11,9 +11,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdatomic.h>
 
 #define PRINT_TEST() printf("Starting test: %s\n", __func__);
-#define DEBUG(num) printf("Point %d\n", num);
+#define DEBUG(num) printf("Point %d\n", num); 
 
 typedef uint8_t U8;
 typedef uint16_t U16;
@@ -89,10 +90,10 @@ typedef struct ThreadPool
     Thread* worker_threads;
 } ThreadPool;
 
-typedef struct ThreadStartupArgument
+typedef struct SocketThreadGroup
 {
-    ThreadPool* thread_pool_pointer;
-} ThreadStartupArgument;
+    Thread* thread_group;
+} SocketThreadGroup;
 
 typedef struct KeyValueServer
 {
@@ -102,6 +103,30 @@ typedef struct KeyValueServer
     PollCollection poll_collection;
     ThreadPool thread_pool;
 } KeyValueServer;
+
+typedef enum MessageStatus
+{
+    MESSAGE_STATUS_SUCCESS = 1,
+    MESSAGE_STATUS_FAILURE = 2
+} MessageStatus;
+
+typedef enum MessageType
+{
+    MESSAGE_TYPE_PUT_KEY_VALUE_REQUEST = 1,
+    MESSAGE_TYPE_PUT_KEY_VALUE_RESPONSE = 2,
+    MESSAGE_TYPE_PUT_KEY_VALUE_ERROR = 3,
+
+    MESSAGE_TYPE_GET_VALUE_REQUEST = 10,
+    MESSAGE_TYPE_GET_VALUE_RESPONSE = 11,
+    MESSAGE_TYPE_GET_VALUE_ERROR = 12
+} MessageType;
+
+typedef enum MessageOffset
+{
+    MESSAGE_OFFSET_SIZE = 0,
+    MESSAGE_OFFSET_TYPE = 4,
+    MESSAGE_OFFSET_DATA = 8
+} MessageOffset;
 
 void Vector_Initialize(Vector* vector, U32 number_of_elements, U32 capacity, U32 size_of_element_type);
 void Vector_Destroy(Vector* vector);
@@ -118,10 +143,11 @@ void Socket_ListenOnServerSocket(Socket server_socket, U32 number_of_connections
 
 void PollCollection_Initialize(PollCollection* poll_collection, Socket server_socket, U32 number_of_elements);
 void PollCollection_AddNewConnection(PollCollection* poll_collection, Socket client_socket);
-void PollCollection_Poll(PollCollection* poll_collection, S32 timeout_in_millis);
+void PollCollection_Poll(PollCollection* poll_collection, S32 timeout_in_millis, ThreadPool* thread_pool);
 void PollCollection_Internal_Resize(PollCollection* poll_collection);
+void PollCollection_Internal_HandlePollErrors(S32 poll_result);
 void PollCollection_Internal_HandleListenerSocket(PollCollection* poll_collection, Socket listening_socket);
-void PollCollection_Internal_HandleDataSocket();
+void PollCollection_Internal_HandleDataSocket(ThreadPool* thread_pool, Socket client_connected_socket);
 
 void Queue_Initialize(Queue* queue);
 void Queue_Destroy(Queue* queue);
@@ -140,7 +166,11 @@ void* ThreadPool_Internal_ThreadFunction(void* thread_argument);
 void ThreadPool_Internal_FixThreadTaskArgumentPointer(void* encoded_thread_task_with_argument);
 void ThreadPool_Destroy(ThreadPool* thread_pool);
 
-void PrintHexBytes(void* data, U32 number_of_bytes);
+void Utility_PrintHexBytes(void* data, U32 number_of_bytes);
 bool Utility_AreBytesTheSame(void* data1, void* data2, U32 number_of_bytes);
+void Utility_Get32BitUnsignedValueFromBuffer(const void* source_buffer, U32 offset_into_source, U32* return_value);
+void Utility_Set32BitUnsignedValueInBuffer(void* destination_buffer, U32 offset_into_source, const U32 value);
+void Utility_GetStringFromBuffer(const void* source_buffer, const U32 offset_into_buffer, const U32 string_size, void* return_string_buffer);
+void Utility_SetStringInBuffer(void* destination_buffer, const U32 offset_into_buffer, const U32 string_size, const void* source_string_buffer);
 
 #endif
