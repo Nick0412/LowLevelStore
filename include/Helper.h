@@ -102,14 +102,6 @@ typedef struct SocketThreadGroup
     Thread* thread_group;
 } SocketThreadGroup;
 
-typedef struct LowLevelStoreServer
-{
-    ServerConnectionDetails connection_details;
-    InMemoryKeyValueStore datastore;
-    PollCollection poll_collection;
-    ThreadPool thread_pool;
-} LowLevelStoreServer;
-
 typedef enum MessageStatus
 {
     MESSAGE_STATUS_SUCCESS = 1,
@@ -157,6 +149,14 @@ typedef struct ServerConnectionDetails
     Port port;
     U32 number_of_connections_allowed;
 } ServerConnectionDetails;
+
+typedef struct LowLevelStoreServer
+{
+    ServerConnectionDetails connection_details;
+    InMemoryKeyValueStore datastore;
+    PollCollection poll_collection;
+    ThreadPool thread_pool;
+} LowLevelStoreServer;
 
 /**
  **************************************************************************************************
@@ -215,5 +215,6 @@ void Utility_Set32BitUnsignedValueInBuffer(void* destination_buffer, U32 offset_
 void Utility_GetStringFromBuffer(const void* source_buffer, const U32 offset_into_buffer, const U32 string_size, void* return_string_buffer);
 void Utility_SetStringInBuffer(void* destination_buffer, const U32 offset_into_buffer, const U32 string_size, const void* source_string_buffer);
 U32 Utility_CountDigitsInUnsigned16Value(U16 number);
+void Utility_CheckAndPrintForError(S32 result, S32 error_value_to_compare_against);
 
 #endif

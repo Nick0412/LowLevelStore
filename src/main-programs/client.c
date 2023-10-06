@@ -19,6 +19,7 @@
 
 int main()
 {
+    /*
     Socket client_sock = socket(AF_INET, SOCK_STREAM, 0);
     SocketAddress address = Socket_CreateIPv4InetAddress("127.0.0.1", 23000);
     Socket_ConnectClientSocketToAddress(client_sock, address);
@@ -38,4 +39,5 @@ int main()
 
         printf("\n\n");
     }
+    */
 }

@@ -49,6 +49,7 @@
 
 int main()
 {
+    /*
     Socket server_sock = socket(AF_INET, SOCK_STREAM, 0);
     SocketAddress server_addr = Socket_CreateIPv4InetAddress("127.0.0.1", 23000);
     Socket_BindAddressToServerSocket(server_sock, &server_addr);
@@ -123,6 +124,6 @@ int main()
             printf("\n\n");
         }
     }
-
+    */
     return 0;
 }

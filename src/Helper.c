@@ -662,3 +662,11 @@ U32 Utility_CountDigitsInUnsigned16Value(U16 number)
 {
     return log10(number) + 1;
 }
+
+void Utility_CheckAndPrintForError(S32 result, S32 error_value_to_compare_against)
+{
+    if (result == error_value_to_compare_against)
+    {
+        perror("Error: ");
+    }
+}
