@@ -18,8 +18,6 @@
 #define PRINT_TEST() printf("Starting test: %s\n", __func__);
 #define DEBUG(num) printf("Point %d\n", num);
 
-typedef char* String;
-
 typedef uint8_t U8;
 typedef uint16_t U16;
 typedef uint32_t U32;
@@ -55,6 +53,46 @@ typedef struct SizedMessage
     U32 size;
     U8* message;
 } SizedMessage;
+
+typedef SizedMessage String;
+
+typedef enum InMemoryKeyValueStoreErrorType
+{
+    KEY_NOT_FOUND = 1,
+    PUT_ERROR = 2,
+} InMemoryKeyValueStoreErrorType;
+
+typedef struct GetValueResponseSuccess
+{
+    SizedMessage value;
+} GetValueResponseSuccess;
+
+typedef struct GetValueResponseError
+{
+    InMemoryKeyValueStoreErrorType error_type;
+    String error_string;
+} GetValueResponseError;
+
+typedef struct GetValueRequest
+{
+    SizedMessage key;
+} GetValueRequest;
+
+typedef struct PutValueRequest
+{
+    SizedMessage key;
+    SizedMessage value;
+} PutValueRequest;
+
+typedef struct PutValueResponseSuccess 
+{
+} PutValueResponseSuccess;
+
+typedef struct PutValueResponseError
+{
+    InMemoryKeyValueStoreErrorType error_type;
+    String error_string;
+} PutValueResponseError;
 
 typedef struct QueueNode
 {
@@ -233,11 +271,25 @@ void Utility_CheckAndPrintForError(S32 result, S32 error_value_to_compare_agains
 bool Utility_AreTwoBuffersTheSame(void* buffer1, void* buffer2, U32 number_of_bytes);
 
 void* LowLevelStore_ThreadWorkerFunction(void* arguments);
-void LowLevelStore_HandleMessage(const U8* message, const U32 message_size, InMemoryKeyValueStore* datastore, SizedMessage* return_message);
+void LowLevelStore_HandleMessage(SizedMessage* request, InMemoryKeyValueStore* datastore, SizedMessage* response);
 
 void InMemoryKeyValueStore_Initialize(InMemoryKeyValueStore* store);
-void InMemoryKeyValueStore_PutKeyValue(InMemoryKeyValueStore* store, SizedMessage* key, SizedMessage* value);
+bool InMemoryKeyValueStore_PutKeyValue(InMemoryKeyValueStore* store, SizedMessage* key, SizedMessage* value);
 void InMemoryKeyValueStore_GetValue_Allocation(const InMemoryKeyValueStore* store, SizedMessage* key, SizedMessage* return_value);
 void InMemoryKeyValueStore_Destroy(InMemoryKeyValueStore* store);
+
+void GetValueRequest_Serialize(GetValueRequest* get_value_request, SizedMessage* request);
+void GetValueRequest_Deserialize(SizedMessage* request, GetValueRequest* get_value_request);
+void GetValueResponseSuccess_Serialize(GetValueResponseSuccess* success, SizedMessage* response);
+void GetValueResponseSuccess_Deserialize(SizedMessage* response, GetValueResponseSuccess* success);
+void GetValueResponseError_Serialize(GetValueResponseError* error, SizedMessage* response);
+void GetValueResponseError_Deserialize(SizedMessage* response, GetValueResponseError* error);
+
+void PutValueRequest_Serialize(PutValueRequest* put_value_request, SizedMessage* request);
+void PutValueRequest_Deserialize(SizedMessage* request, PutValueRequest* put_value_request);
+void PutValueResponseSuccess_Serialize(PutValueResponseSuccess* success, SizedMessage* response);
+void PutValueResponseSuccess_Deserialize(SizedMessage* response, PutValueResponseSuccess* success);
+void PutValueResponseError_Serialize(PutValueResponseError* error, SizedMessage* response);
+void PutValueResponseError_Deserialize(SizedMessage* response, PutValueResponseError* error);
 
 #endif

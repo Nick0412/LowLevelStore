@@ -153,7 +153,11 @@ String IPv4Address_Internal_ConvertToString_Allocation(const IPv4Address* ip_add
         number_of_characters_in_ip_address += Utility_CountDigitsInUnsigned16Value(ip_address->ip_parts[i]);
     }
 
-    String string_data = malloc(number_of_characters_in_ip_address);
+    String string_data = {
+        .message = malloc(number_of_characters_in_ip_address),
+        .size = number_of_characters_in_ip_address
+    };
+    
     IPv4Address_Internal_WriteIPv4AddressToBuffer(ip_address, string_data);
 
     return string_data;
@@ -164,10 +168,10 @@ void IPv4Address_Internal_WriteIPv4AddressToBuffer(const IPv4Address* ip_address
     U32 offset = 0;
     for (U32 i = 0; i < 4; i++)
     {
-        offset += sprintf(buffer_to_write_to + offset, "%d", ip_address->ip_parts[i]);
+        offset += sprintf(buffer_to_write_to.message + offset, "%d", ip_address->ip_parts[i]);
         if (i != 3)
         {
-            offset += sprintf(buffer_to_write_to + offset, ".");
+            offset += sprintf(buffer_to_write_to.message + offset, ".");
         }
     }
 }
@@ -179,9 +183,9 @@ SocketAddress SocketAddress_Create(const IPv4Address* ip_address, U16 port)
         .sin_port = htons(port)
     };
 
-    char* ip_address_string = IPv4Address_Internal_ConvertToString_Allocation(ip_address);
-    inet_pton(AF_INET, ip_address_string, &address.sin_addr);
-    free(ip_address_string);
+    String ip_address_string = IPv4Address_Internal_ConvertToString_Allocation(ip_address);
+    inet_pton(AF_INET, ip_address_string.message, &address.sin_addr);
+    free(ip_address_string.message);
 
     return address;
 }
@@ -718,7 +722,11 @@ void* LowLevelStore_ThreadWorkerFunction(void* arguments)
 
     // Handle message.
     SizedMessage return_message;
-    LowLevelStore_HandleMessage(receive_buffer, message_size, datastore, &return_message);
+    SizedMessage request = {
+        .message = receive_buffer,
+        .size = message_size
+    };
+    LowLevelStore_HandleMessage(&request, datastore, &return_message);
     U8* buffer_to_send = return_message.message;
     
     // Send message response to client.
@@ -748,25 +756,168 @@ void* LowLevelStore_ThreadWorkerFunction(void* arguments)
 }
 
 // TODO: Finish
-void LowLevelStore_HandleMessage(const U8* message, const U32 message_size, InMemoryKeyValueStore* datastore, SizedMessage* return_message)
+void LowLevelStore_HandleMessage(SizedMessage* request, InMemoryKeyValueStore* datastore, SizedMessage* response)
 {
     U32 message_type;
-    Utility_Get32BitUnsignedValueFromBuffer(message, 0, &message_type);
+    Utility_Get32BitUnsignedValueFromBuffer(request->message, 0, &message_type);
 
     switch (message_type)
     {
         case MESSAGE_TYPE_GET_VALUE_REQUEST:
         {
-            // Deserialize
-            // Act
-            // Return message
+            SizedMessage datastore_response;
+            GetValueRequest get_value_request;
+            GetValueRequest_Deserialize(request, &get_value_request);
+            
+            InMemoryKeyValueStore_GetValue_Allocation(datastore, &get_value_request.key, &datastore_response);
+
+            if (datastore_response.message == NULL)
+            {
+                const char* error = "No key found";
+                U32 error_size = strlen(error);
+                GetValueResponseError error = {
+                    .error_type = KEY_NOT_FOUND,
+                    .error_string = {
+                        .message = error,
+                        .size = error_size
+                    }
+                };
+
+                GetValueResponseError_Serialize(&error, response);
+            }
+            else
+            {
+                GetValueResponseSuccess success = {
+                    .value = datastore_response
+                };
+                GetValueResponseSuccess_Serialize(&success, response);
+            }
+            
+            // Cleanup
+            free(get_value_request.key.message);
+            free(datastore_response.message);
             break;
         }
         case MESSAGE_TYPE_PUT_KEY_VALUE_REQUEST:
         {
+            SizedMessage datastore_response;
+            PutValueRequest put_value_request;
+            PutValueRequest_Deserialize(request, &put_value_request);
+            
+            bool put_succeeded = InMemoryKeyValueStore_PutKeyValue(datastore, &put_value_request.key, &put_value_request.value);
+
+            if (!put_succeeded)
+            {
+                const char* error = "Put failed";
+                U32 error_size = strlen(error);
+                PutValueResponseError error = {
+                    .error_type = PUT_ERROR,
+                    .error_string = {
+                        .message = error,
+                        .size = error_size
+                    }
+                };
+
+                PutValueResponseError_Serialize(&error, response);
+            }
+            else
+            {
+                PutValueResponseSuccess success = {};
+                PutValueResponseSuccess_Serialize(&success, response);
+            }
+            
+            // Cleanup
+            free(put_value_request.key.message);
+            free(put_value_request.value.message);
+            free(datastore_response.message);
             break;
         }
     }
+}
+
+void GetValueRequest_Deserialize(SizedMessage* request, GetValueRequest* get_value_request)
+{
+    U32 payload_offset = 4;
+    U8* payload = request->message + payload_offset;    
+    U32 key_size;
+    Utility_Get32BitUnsignedValueFromBuffer(payload, 0, &key_size);
+    U8* key = malloc(key_size);
+    memcpy(key, payload + 4, key_size);
+    SizedMessage key_bytes = {
+        .message = key,
+        .size = key_size
+    };
+    get_value_request->key = key_bytes;
+}
+
+void GetValueRequest_Serialize(GetValueRequest* get_value_request, SizedMessage* request)
+{
+    U32 request_size = (sizeof(U32) * 2) + get_value_request->key.size;
+    U8* request_bytes = malloc(request_size);
+    Utility_Set32BitUnsignedValueInBuffer(request_bytes, 0, MESSAGE_TYPE_GET_VALUE_REQUEST);
+    Utility_Set32BitUnsignedValueInBuffer(request_bytes, 4, get_value_request->key.size);
+    memcpy(request_bytes + 8, get_value_request->key.message, get_value_request->key.size);
+
+    request->message = request_bytes;
+    request->size = request_size;
+}
+
+void GetValueResponseError_Serialize(GetValueResponseError* error, SizedMessage* response)
+{
+    U32 response_size = (sizeof(U32) * 3) + error->error_string.size;
+    U8* response_bytes = malloc(response_size);
+    Utility_Set32BitUnsignedValueInBuffer(response_bytes, 0, MESSAGE_TYPE_GET_VALUE_ERROR);
+    Utility_Set32BitUnsignedValueInBuffer(response_bytes, 4, error->error_type);
+    Utility_Set32BitUnsignedValueInBuffer(response_bytes, 8, error->error_string.size);
+    memcpy(response_bytes + 12, error->error_string.message, error->error_string.size);
+
+    response->message = response_bytes;
+    response->size = response_size;
+}
+
+void GetValueResponseError_Deserialize(SizedMessage* response, GetValueResponseError* error)
+{
+    U32 error_type;
+    Utility_Get32BitUnsignedValueFromBuffer(response->message, 4, &error_type);
+    U32 error_string_size;
+    Utility_Get32BitUnsignedValueFromBuffer(response->message, 8, &error_string_size);
+    U8* error_string = malloc(error_string_size);
+    memcpy(error_string, response->message + 12, error_string_size);
+
+    *error = (GetValueResponseError) {
+        .error_type = error_type,
+        .error_string = {
+            .message = error_string,
+            .size = error_string_size
+        }
+    };
+}
+
+void GetValueResponseSuccess_Serialize(GetValueResponseSuccess* success, SizedMessage* response)
+{
+    U32 response_size = sizeof(U32)*2 + success->value.size;
+    U8* response_bytes = malloc(response_size);
+    Utility_Set32BitUnsignedValueInBuffer(response_bytes, 0, MESSAGE_TYPE_GET_VALUE_RESPONSE);
+    Utility_Set32BitUnsignedValueInBuffer(response_bytes, 4, success->value.size);
+    memcpy(response_bytes + 8, success->value.message, success->value.size);
+
+    response->message = response_bytes;
+    response->size = response_size;
+}
+
+void GetValueResponseSuccess_Deserialize(SizedMessage* response, GetValueResponseSuccess* success)
+{
+    U32 value_string_size;
+    Utility_Get32BitUnsignedValueFromBuffer(response->message, 4, &value_string_size);
+    U8* value_string = malloc(value_string_size);
+    memcpy(value_string, response->message + 8, value_string_size);
+
+    *success = (GetValueResponseSuccess) {
+        .value = {
+            .message = value_string,
+            .size = value_string_size
+        }
+    };
 }
 
 void InMemoryKeyValueStore_Initialize(InMemoryKeyValueStore* store)
@@ -774,8 +925,13 @@ void InMemoryKeyValueStore_Initialize(InMemoryKeyValueStore* store)
     store->current_index = 0;
 }
 
-void InMemoryKeyValueStore_PutKeyValue(InMemoryKeyValueStore* store, SizedMessage* key, SizedMessage* value)
+bool InMemoryKeyValueStore_PutKeyValue(InMemoryKeyValueStore* store, SizedMessage* key, SizedMessage* value)
 {
+    if (store->current_index >= 100) 
+    {
+        return false;
+    }
+
     SizedMessage* current_key =  &store->keys[store->current_index];
     SizedMessage* current_value = &store->values[store->current_index];
 
@@ -788,6 +944,7 @@ void InMemoryKeyValueStore_PutKeyValue(InMemoryKeyValueStore* store, SizedMessag
     memcpy(current_value->message, value->message, value->size);
 
     store->current_index++;
+    return true;
 }
 
 void InMemoryKeyValueStore_GetValue_Allocation(const InMemoryKeyValueStore* store, SizedMessage* key, SizedMessage* return_value)
@@ -802,6 +959,7 @@ void InMemoryKeyValueStore_GetValue_Allocation(const InMemoryKeyValueStore* stor
             return_value->size = current_value->size;
             return_value->message = malloc(current_value->size);
             memcpy(return_value->message, current_value->message, current_value->size);
+            return;
         }
     }
 
