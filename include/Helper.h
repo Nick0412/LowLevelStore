@@ -16,7 +16,7 @@
 #include <math.h>
 
 #define PRINT_TEST() printf("Starting test: %s\n", __func__);
-#define DEBUG(num) printf("Point %d\n", num); 
+#define DEBUG(num) printf("Point %d\n", num);
 
 typedef char* String;
 
@@ -50,6 +50,12 @@ typedef struct Vector
     void* data_pointer;
 } Vector;
 
+typedef struct SizedMessage
+{
+    U32 size;
+    U8* message;
+} SizedMessage;
+
 typedef struct QueueNode
 {
     struct QueueNode* next;
@@ -67,7 +73,9 @@ typedef struct Queue
 
 typedef struct InMemoryKeyValueStore
 {
-
+    SizedMessage keys[100];
+    SizedMessage values[100];
+    U32 current_index;
 } InMemoryKeyValueStore;
 
 typedef struct PollCollection
@@ -101,6 +109,12 @@ typedef struct SocketThreadGroup
     atomic_bool should_close;
     Thread* thread_group;
 } SocketThreadGroup;
+
+typedef struct ThreadWorkerArguments
+{
+    Socket client_socket;
+    InMemoryKeyValueStore* datastore;
+} ThreadWorkerArguments;
 
 typedef enum MessageStatus
 {
@@ -216,5 +230,14 @@ void Utility_GetStringFromBuffer(const void* source_buffer, const U32 offset_int
 void Utility_SetStringInBuffer(void* destination_buffer, const U32 offset_into_buffer, const U32 string_size, const void* source_string_buffer);
 U32 Utility_CountDigitsInUnsigned16Value(U16 number);
 void Utility_CheckAndPrintForError(S32 result, S32 error_value_to_compare_against);
+bool Utility_AreTwoBuffersTheSame(void* buffer1, void* buffer2, U32 number_of_bytes);
+
+void* LowLevelStore_ThreadWorkerFunction(void* arguments);
+void LowLevelStore_HandleMessage(const U8* message, const U32 message_size, InMemoryKeyValueStore* datastore, SizedMessage* return_message);
+
+void InMemoryKeyValueStore_Initialize(InMemoryKeyValueStore* store);
+void InMemoryKeyValueStore_PutKeyValue(InMemoryKeyValueStore* store, SizedMessage* key, SizedMessage* value);
+void InMemoryKeyValueStore_GetValue_Allocation(const InMemoryKeyValueStore* store, SizedMessage* key, SizedMessage* return_value);
+void InMemoryKeyValueStore_Destroy(InMemoryKeyValueStore* store);
 
 #endif

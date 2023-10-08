@@ -7,29 +7,29 @@
 
 int main()
 {
-    // printf("STARTING PROGRAM WITH PID %d\n", getpid());
-    // Socket listening_socket = socket(AF_INET, SOCK_STREAM, 0);
-    // Utility_CheckAndPrintForError(listening_socket, -1);
-    // struct timeval socket_timeout = {
-    //     .tv_sec = 5,
-    //     .tv_usec = 0
-    // };
-    // U8 should_reuse_address = 1;
-    // setsockopt(listening_socket, SOL_SOCKET, SO_REUSEADDR, &should_reuse_address, sizeof(listening_socket));
-    // setsockopt(listening_socket, SOL_SOCKET, SO_RCVTIMEO, &socket_timeout, sizeof(listening_socket));
-    // setsockopt(listening_socket, SOL_SOCKET, SO_SNDTIMEO, &socket_timeout, sizeof(listening_socket));
+    printf("STARTING PROGRAM WITH PID %d\n", getpid());
+    Socket listening_socket = socket(AF_INET, SOCK_STREAM, 0);
+    Utility_CheckAndPrintForError(listening_socket, -1);
+    struct timeval socket_timeout = {
+        .tv_sec = 5,
+        .tv_usec = 0
+    };
+    U8 should_reuse_address = 1;
+    setsockopt(listening_socket, SOL_SOCKET, SO_REUSEADDR, &should_reuse_address, sizeof(listening_socket));
+    setsockopt(listening_socket, SOL_SOCKET, SO_RCVTIMEO, &socket_timeout, sizeof(listening_socket));
+    setsockopt(listening_socket, SOL_SOCKET, SO_SNDTIMEO, &socket_timeout, sizeof(listening_socket));
 
-    // SocketAddress socket_address = {
-    //     .sin_family = AF_INET,
-    //     .sin_port = htons(20000)
-    // };
-    // inet_pton(AF_INET, "127.0.0.1", &socket_address.sin_addr);
+    SocketAddress socket_address = {
+        .sin_family = AF_INET,
+        .sin_port = htons(20000)
+    };
+    inet_pton(AF_INET, "127.0.0.1", &socket_address.sin_addr);
     
-    // int result = bind(listening_socket, (GenericSocketAddress*)&socket_address, sizeof(socket_address));
-    // Utility_CheckAndPrintForError(result, -1);
+    int result = bind(listening_socket, (GenericSocketAddress*)&socket_address, sizeof(socket_address));
+    Utility_CheckAndPrintForError(result, -1);
 
-    // result = listen(listening_socket, 100);
-    // Utility_CheckAndPrintForError(result, -1);
+    result = listen(listening_socket, 100);
+    Utility_CheckAndPrintForError(result, -1);
     
     int result;
     printf("Making fifo\n");

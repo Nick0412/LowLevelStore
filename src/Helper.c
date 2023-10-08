@@ -597,20 +597,6 @@ void ThreadPool_Destroy(ThreadPool* thread_pool)
     free(thread_pool->worker_threads);
 }
 
-// void Messages_HandleMessage(Socket client_connected_socket)
-// {
-//     // Recv 4 bytes to get size
-    
-//     // Malloc buffer to hold remaining data
-//     // Get message type
-//     // Dispatch based on type
-//     // Deserialize data into message struct 
-//     // Do action
-//     // Get Result 
-//     // Serialize Result
-//     // Send Result back
-// }
-
 void Utility_PrintHexBytes(void* data, U32 number_of_bytes)
 {
     for (U32 i = 0; i < number_of_bytes; i++)
@@ -669,4 +655,170 @@ void Utility_CheckAndPrintForError(S32 result, S32 error_value_to_compare_agains
     {
         perror("Error: ");
     }
+}
+
+bool Utility_AreTwoBuffersTheSame(void* buffer1, void* buffer2, U32 number_of_bytes)
+{
+    return (memcmp(buffer1, buffer2, number_of_bytes) == 0);
+}
+
+void* LowLevelStore_ThreadWorkerFunction(void* arguments)
+{
+    ThreadWorkerArguments* casted_args = arguments;
+    Socket socket = casted_args->client_socket;
+    InMemoryKeyValueStore* datastore = casted_args->datastore;
+
+    U8 receive_buffer[1024];
+    U8 message_size_buffer[4];
+
+    // Receive message size.
+    S32 number_of_bytes_received = 0;
+    while (number_of_bytes_received < 4)
+    {
+        U32 number_of_bytes_remaining = 4 - number_of_bytes_received;
+        S32 bytes_received_this_call = recv(
+            socket,
+            message_size_buffer + number_of_bytes_received,
+            number_of_bytes_remaining,
+            0);
+
+        if (bytes_received_this_call <= 0)
+        {
+            perror("Receive error");
+            close(socket);
+            return NULL;
+        }
+
+        number_of_bytes_received += bytes_received_this_call;
+    }
+
+    U32 message_size;
+    Utility_Get32BitUnsignedValueFromBuffer(message_size_buffer, 0, &message_size);
+
+    // Receive actual message.
+    number_of_bytes_received = 0;
+    while (number_of_bytes_received < message_size)
+    {
+        U32 number_of_bytes_remaining = message_size - number_of_bytes_received;
+        S32 bytes_received_this_call = recv(
+            socket,
+            receive_buffer + number_of_bytes_received,
+            number_of_bytes_remaining,
+            0);
+        
+        if (bytes_received_this_call <= 0)
+        {
+            perror("Receive error");
+            close(socket);
+            return NULL;
+        }
+
+        number_of_bytes_received += bytes_received_this_call;
+    }
+
+    // Handle message.
+    SizedMessage return_message;
+    LowLevelStore_HandleMessage(receive_buffer, message_size, datastore, &return_message);
+    U8* buffer_to_send = return_message.message;
+    
+    // Send message response to client.
+    S32 number_of_bytes_sent = 0;
+    S32 number_of_bytes_to_send = return_message.size;
+    while (number_of_bytes_sent < number_of_bytes_to_send)
+    {
+        U32 number_of_bytes_remaining = number_of_bytes_to_send - number_of_bytes_sent;
+        S32 bytes_sent_this_call = send(
+            socket,
+            buffer_to_send + number_of_bytes_sent,
+            number_of_bytes_remaining,
+            0);
+
+        if (bytes_sent_this_call <= 0)
+        {
+            perror("Send error");
+            close(socket);
+            return NULL;
+        }
+
+        number_of_bytes_sent += bytes_sent_this_call;
+    }
+
+    close(socket);
+    return NULL;
+}
+
+// TODO: Finish
+void LowLevelStore_HandleMessage(const U8* message, const U32 message_size, InMemoryKeyValueStore* datastore, SizedMessage* return_message)
+{
+    U32 message_type;
+    Utility_Get32BitUnsignedValueFromBuffer(message, 0, &message_type);
+
+    switch (message_type)
+    {
+        case MESSAGE_TYPE_GET_VALUE_REQUEST:
+        {
+            // Deserialize
+            // Act
+            // Return message
+            break;
+        }
+        case MESSAGE_TYPE_PUT_KEY_VALUE_REQUEST:
+        {
+            break;
+        }
+    }
+}
+
+void InMemoryKeyValueStore_Initialize(InMemoryKeyValueStore* store)
+{
+    store->current_index = 0;
+}
+
+void InMemoryKeyValueStore_PutKeyValue(InMemoryKeyValueStore* store, SizedMessage* key, SizedMessage* value)
+{
+    SizedMessage* current_key =  &store->keys[store->current_index];
+    SizedMessage* current_value = &store->values[store->current_index];
+
+    current_key->size = key->size;
+    current_key->message = malloc(key->size);
+    memcpy(current_key->message, key->message, key->size);
+
+    current_value->size = value->size;
+    current_value->message = malloc(value->size);
+    memcpy(current_value->message, value->message, value->size);
+
+    store->current_index++;
+}
+
+void InMemoryKeyValueStore_GetValue_Allocation(const InMemoryKeyValueStore* store, SizedMessage* key, SizedMessage* return_value)
+{
+    for (U32 i = 0; i < store->current_index; i++)
+    {
+        SizedMessage* current_key = &store->keys[i];
+        SizedMessage* current_value = &store->values[i];
+
+        if (Utility_AreTwoBuffersTheSame(current_key->message, key->message, key->size))
+        {
+            return_value->size = current_value->size;
+            return_value->message = malloc(current_value->size);
+            memcpy(return_value->message, current_value->message, current_value->size);
+        }
+    }
+
+    return_value->size = 0;
+    return_value->message = NULL;
+}
+
+void InMemoryKeyValueStore_Destroy(InMemoryKeyValueStore* store)
+{
+    for (U32 i = 0; i < store->current_index; i++)
+    {
+        SizedMessage* current_key = &store->keys[i];
+        SizedMessage* current_value = &store->values[i];
+
+        free(current_key->message);
+        free(current_value->message);
+    }
+
+    store->current_index = 0;
 }
