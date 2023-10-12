@@ -168,10 +168,10 @@ void IPv4Address_Internal_WriteIPv4AddressToBuffer(const IPv4Address* ip_address
     U32 offset = 0;
     for (U32 i = 0; i < 4; i++)
     {
-        offset += sprintf(buffer_to_write_to.message + offset, "%d", ip_address->ip_parts[i]);
+        offset += sprintf((char*)(buffer_to_write_to.message + offset), "%d", ip_address->ip_parts[i]);
         if (i != 3)
         {
-            offset += sprintf(buffer_to_write_to.message + offset, ".");
+            offset += sprintf((char*)(buffer_to_write_to.message + offset), ".");
         }
     }
 }
@@ -184,7 +184,7 @@ SocketAddress SocketAddress_Create(const IPv4Address* ip_address, U16 port)
     };
 
     String ip_address_string = IPv4Address_Internal_ConvertToString_Allocation(ip_address);
-    inet_pton(AF_INET, ip_address_string.message, &address.sin_addr);
+    inet_pton(AF_INET, (char*)ip_address_string.message, &address.sin_addr);
     free(ip_address_string.message);
 
     return address;
@@ -671,6 +671,8 @@ void* LowLevelStore_ThreadWorkerFunction(void* arguments)
     ThreadWorkerArguments* casted_args = arguments;
     Socket socket = casted_args->client_socket;
     InMemoryKeyValueStore* datastore = casted_args->datastore;
+    // TODO: Remove later when working
+    (void)datastore;
 
     U8 receive_buffer[1024];
     U8 message_size_buffer[4];
@@ -701,7 +703,7 @@ void* LowLevelStore_ThreadWorkerFunction(void* arguments)
 
     // Receive actual message.
     number_of_bytes_received = 0;
-    while (number_of_bytes_received < message_size)
+    while (number_of_bytes_received < (S32)message_size)
     {
         U32 number_of_bytes_remaining = message_size - number_of_bytes_received;
         S32 bytes_received_this_call = recv(
@@ -726,7 +728,11 @@ void* LowLevelStore_ThreadWorkerFunction(void* arguments)
         .message = receive_buffer,
         .size = message_size
     };
-    LowLevelStore_HandleMessage(&request, datastore, &return_message);
+    // TODO: Remove later when working
+    (void)request;
+
+    // TODO: uncomment when working
+    // LowLevelStore_HandleMessage(&request, datastore, &return_message);
     U8* buffer_to_send = return_message.message;
     
     // Send message response to client.
@@ -755,6 +761,7 @@ void* LowLevelStore_ThreadWorkerFunction(void* arguments)
     return NULL;
 }
 
+/*
 // TODO: Finish
 void LowLevelStore_HandleMessage(SizedMessage* request, InMemoryKeyValueStore* datastore, SizedMessage* response)
 {
@@ -773,12 +780,12 @@ void LowLevelStore_HandleMessage(SizedMessage* request, InMemoryKeyValueStore* d
 
             if (datastore_response.message == NULL)
             {
-                const char* error = "No key found";
-                U32 error_size = strlen(error);
+                const char* error_string = "No key found";
+                U32 error_size = strlen(error_string);
                 GetValueResponseError error = {
                     .error_type = KEY_NOT_FOUND,
                     .error_string = {
-                        .message = error,
+                        .message = (U8*)error_string,
                         .size = error_size
                     }
                 };
@@ -808,12 +815,12 @@ void LowLevelStore_HandleMessage(SizedMessage* request, InMemoryKeyValueStore* d
 
             if (!put_succeeded)
             {
-                const char* error = "Put failed";
-                U32 error_size = strlen(error);
+                const char* error_string = "Put failed";
+                U32 error_size = strlen(error_string);
                 PutValueResponseError error = {
                     .error_type = PUT_ERROR,
                     .error_string = {
-                        .message = error,
+                        .message = (U8*)error_string,
                         .size = error_size
                     }
                 };
@@ -834,6 +841,7 @@ void LowLevelStore_HandleMessage(SizedMessage* request, InMemoryKeyValueStore* d
         }
     }
 }
+*/
 
 void GetValueRequest_Deserialize(SizedMessage* request, GetValueRequest* get_value_request)
 {
@@ -951,8 +959,8 @@ void InMemoryKeyValueStore_GetValue_Allocation(const InMemoryKeyValueStore* stor
 {
     for (U32 i = 0; i < store->current_index; i++)
     {
-        SizedMessage* current_key = &store->keys[i];
-        SizedMessage* current_value = &store->values[i];
+        const SizedMessage* current_key = &store->keys[i];
+        const SizedMessage* current_value = &store->values[i];
 
         if (Utility_AreTwoBuffersTheSame(current_key->message, key->message, key->size))
         {

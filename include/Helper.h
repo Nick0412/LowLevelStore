@@ -14,9 +14,10 @@
 #include <stdatomic.h>
 #include <netinet/in.h>
 #include <math.h>
+#include <unistd.h>
 
-#define PRINT_TEST() printf("Starting test: %s\n", __func__);
-#define DEBUG(num) printf("Point %d\n", num);
+#define PP_PRINT_TEST() printf("Starting test: %s\n", __func__);
+#define PP_DEBUG(num) printf("Point %d\n", num);
 
 typedef uint8_t U8;
 typedef uint16_t U16;
